@@ -199,7 +199,7 @@ def test():
         cv2.imshow("original", image)
         image = image.astype(np.float32) / 255
         mean, _ = encoder(image.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
-        recon = decoder(mean)[0].numpy()
+        recon = decoder(mean)[-1].numpy()
         recon = (recon.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) * 255).clip(0, 255).astype(np.uint8)
         cv2.imshow("reconstruction", recon)
         cv2.waitKey(0)
@@ -210,7 +210,7 @@ def test_random_latent():
     decoder.summary()
     while True:
         latent = np.random.random((1, LATENT_DIM))
-        image = decoder(latent)[0].numpy()
+        image = decoder(latent)[-1].numpy()
         image = (image.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) * 255).clip(0, 255).astype(np.uint8)
         cv2.imshow("generated image", image)
         cv2.waitKey(0)
