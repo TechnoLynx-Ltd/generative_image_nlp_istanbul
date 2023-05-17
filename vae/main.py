@@ -5,15 +5,16 @@ import tensorflow as tf
 import keras
 from keras import Model
 from keras.layers import *
+from keras.applications.vgg19 import VGG19
 from tensorflow_addons.layers import SpectralNormalization, InstanceNormalization
 import os
 from tqdm import tqdm
 
-DATA_FOLDER = "celeba_256_1000"
+DATA_FOLDER = "datasets/celeba_256_1000"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
-LEARNING_RATE = 0.00005
-BATCH_SIZE = 8
+LEARNING_RATE = 0.00001
+BATCH_SIZE = 1
 EPOCHS = 10
 
 
@@ -37,59 +38,54 @@ def encoder_model():
     return Model(inputs=image, outputs=[mean, logvar])
 
 
+def decoder_block(res, img, channels, lv):
+    res = UpSampling2D(2, interpolation='bicubic')(res)
+    res = SpectralNormalization(Conv2D(channels, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(res)
+    res = InstanceNormalization(center=False, scale=False)(res)
+
+    common_dense = Dense(512, activation='leaky_relu', kernel_initializer='he_normal')(lv)
+    beta = Dense(channels, kernel_initializer='he_normal')(common_dense)
+    beta = Reshape((1, 1, channels))(beta)
+    gamma = Dense(channels, kernel_initializer='he_normal')(common_dense)
+    gamma = Reshape((1, 1, channels))(gamma)
+    res = res * (1 + gamma) + beta
+
+    out_res = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(res)
+    img = UpSampling2D(2, interpolation='bicubic')(img)
+    img = img + out_res
+    return res, img
+
+
 def decoder_model():
-    # affine transforms false
-    # latent dense to channel size, mul by scale add offset
-    # dense and wider conv at beginning
+    outputs = []
 
-    latent = Input(shape=LATENT_DIM)
-    x = SpectralNormalization(Dense(4 * 4 * 128, activation='leaky_relu', kernel_initializer='he_normal'))(latent)
-    x = Reshape((4, 4, 128))(x)
-    x = InstanceNormalization()(x)
-    x = SpectralNormalization(Conv2D(128, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    level1 = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(x)
+    lv = Input(shape=LATENT_DIM)
+    res = SpectralNormalization(Dense(4 * 4 * 128, activation='leaky_relu', kernel_initializer='he_normal'))(lv)
+    res = Reshape((4, 4, 128))(res)
+    res = SpectralNormalization(Conv2D(128, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(res)
+    res = InstanceNormalization(center=False, scale=False)(res)
+    img = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(res)
+    outputs.append(img)
 
-    x = InstanceNormalization()(x)
-    x = UpSampling2D(2)(x)
-    x = SpectralNormalization(Conv2D(128, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    residual = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(x)
-    level1_up = UpSampling2D(2, interpolation='bicubic')(level1)
-    level2 = residual + level1_up
+    res, img = decoder_block(res, img, 128, lv)
+    outputs.append(img)
 
-    x = InstanceNormalization()(x)
-    x = UpSampling2D(2)(x)
-    x = SpectralNormalization(Conv2D(128, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    residual = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(x)
-    level2_up = UpSampling2D(2, interpolation='bicubic')(level2)
-    level3 = residual + level2_up
+    res, img = decoder_block(res, img, 128, lv)
+    outputs.append(img)
 
-    x = InstanceNormalization()(x)
-    x = UpSampling2D(2)(x)
-    x = SpectralNormalization(Conv2D(128, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    residual = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(x)
-    level3_up = UpSampling2D(2, interpolation='bicubic')(level3)
-    level4 = residual + level3_up
+    res, img = decoder_block(res, img, 128, lv)
+    outputs.append(img)
 
-    x = InstanceNormalization()(x)
-    x = UpSampling2D(2)(x)
-    x = SpectralNormalization(Conv2D(64, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    residual = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(x)
-    level4_up = UpSampling2D(2, interpolation='bicubic')(level4)
-    level5 = residual + level4_up
+    res, img = decoder_block(res, img, 128, lv)
+    outputs.append(img)
 
-    x = InstanceNormalization()(x)
-    x = UpSampling2D(2)(x)
-    x = SpectralNormalization(Conv2D(32, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    residual = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(x)
-    level5_up = UpSampling2D(2, interpolation='bicubic')(level5)
-    level6 = residual + level5_up
+    res, img = decoder_block(res, img, 64, lv)
+    outputs.append(img)
 
-    x = InstanceNormalization()(x)
-    x = UpSampling2D(2)(x)
-    residual = Conv2D(3, kernel_size=3, kernel_initializer='he_normal', padding='same')(x)
-    level6_up = UpSampling2D(2, interpolation='bicubic')(level6)
-    recon = residual + level6_up
-    return Model(inputs=latent, outputs=[recon, level6, level5, level4, level3, level2, level1])
+    res, img = decoder_block(res, img, 32, lv)
+    outputs.append(img)
+
+    return Model(inputs=lv, outputs=outputs)
 
 
 def batch_array(array):
@@ -118,7 +114,7 @@ def calc_metric(dataset_files):
         images = images.astype(np.float32) / 255
         images = np.clip(images, -1, 1)
         mean, _ = encoder(images)
-        metric.update_state(images, decoder(mean)[0])
+        metric.update_state(images, decoder(mean)[-1])
     return metric.result().numpy()
 
 
@@ -129,17 +125,28 @@ def reparameterize(mean, logvar):
 
 
 def loss_fn(x, recons, mean, logvar):
-    mse_loss = tf.keras.losses.MeanSquaredError()
-    mse = 0
-    for level in recons:
-        mse += mse_loss(level, x)
-        x = tf.image.resize(x, (x.shape[1] // 2, x.shape[2] // 2), method='bicubic')
+    l1_loss = tf.keras.losses.MeanAbsoluteError()
+    recon_loss = 0
+    x_copy = tf.identity(x)
+    for level in recons[::-1]:
+        recon_loss += l1_loss(level, x_copy)
+        x_copy = tf.image.resize(x_copy, (x_copy.shape[1] // 2, x_copy.shape[2] // 2), method='bicubic')
 
-    mse /= len(recons)
+    recon_loss /= len(recons)
 
-    kld = -0.5 * tf.reduce_sum(1 + logvar - tf.pow(mean, 2) - tf.exp(logvar))
-    kld /= BATCH_SIZE * IMAGE_SIZE * IMAGE_SIZE
-    return mse + kld
+    kld_loss = -0.5 * tf.reduce_sum(1 + logvar - tf.pow(mean, 2) - tf.exp(logvar))
+    kld_loss /= BATCH_SIZE
+
+    vgg_x = vgg19(x)
+    vgg_recon = vgg19(recons[-1])
+    vgg_loss = 0
+    for i in range(len(vgg_x)):
+        vgg_loss += l1_loss(vgg_x[i], vgg_recon[i])
+    vgg_loss /= len(vgg_x)
+
+    loss = recon_loss + kld_loss + vgg_loss
+    print(loss.numpy())
+    return loss
 
 
 def train_for_one_batch(batch):
@@ -209,18 +216,22 @@ def test_random_latent():
         cv2.waitKey(0)
 
 
-# encoder = encoder_model()
-# encoder.summary()
-# decoder = decoder_model()
-# decoder.summary()
-
-encoder = keras.models.load_model("encoder.hd5")
+encoder = encoder_model()
 encoder.summary()
-decoder = keras.models.load_model("decoder.hd5")
+decoder = decoder_model()
 decoder.summary()
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+# encoder = keras.models.load_model("encoder.hd5")
+# encoder.summary()
+# decoder = keras.models.load_model("decoder.hd5")
+# decoder.summary()
 
-# train()
+optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+vgg19 = VGG19(include_top=False, weights='imagenet', input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3))
+vgg19_selectedLayers = [1, 2, 9, 10, 17, 18]
+vgg19_selectedOutputs = [vgg19.layers[i].output for i in vgg19_selectedLayers]
+vgg19 = Model(vgg19.inputs, vgg19_selectedOutputs)
+
+train()
 test()
 # test_random_latent()
