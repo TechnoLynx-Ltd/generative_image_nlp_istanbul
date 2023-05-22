@@ -20,34 +20,32 @@ model = MvpForConditionalGeneration.from_pretrained("RUCAIBox/mtl-data-to-text")
 labels = []
 prompt = ''
 out = []
-output = []
+tabular_labels = []
 output_labels = []
 CSV_file_path = open("MAAD_Face.csv")
 MAAD_data = np.genfromtxt(CSV_file_path, dtype=None, delimiter=',', names=True)
-
 for j in range(49):
     labels.append(MAAD_data.dtype.names[j].replace('_', ' '))
-
-output_labels.extend([labels[0], labels[1], 'Description'])
-output.append(output_labels)
-for i in range(MAAD_data.shape[0]):
-    out = [MAAD_data[i][0].decode()]
-    out.append(MAAD_data[i][1])
-    prompt = 'Describe the following data: '
-    if MAAD_data[i][2] == 1:
-        prompt += labels[2]
-    else:
-        prompt += 'Female'
-    for j in range(3,49):
-        if j != 47 and MAAD_data[i][j] == 1:
-            prompt += ' | '
-            prompt += labels[j]
-            inputs = tokenizer(prompt, return_tensors="pt")
-            generated_ids = model.generate(**inputs)
-            model_out = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
-    
-    out.append(model_out[0])
-    output.append(out)
+        
 with open("Gen_text.csv", "w", newline="") as f:
     writer = csv.writer(f)
-    writer.writerows(output)
+    output_labels.extend([labels[0], labels[1], 'Description'])
+    for i in range(MAAD_data.shape[0]):
+        out = [MAAD_data[i][0].decode()]
+        out.append(MAAD_data[i][1])
+        prompt = 'Describe the following data: '
+        tabular_labels = [MAAD_data[i][2]]
+        if MAAD_data[i][2] == 1:
+            prompt += labels[2]
+        else:
+            prompt += 'Female'
+        for j in range(3,49):
+            tabular_labels.append(MAAD_data[i][j])
+            if j != 47 and MAAD_data[i][j] == 1:
+                prompt += ' | '
+                prompt += labels[j]
+        inputs = tokenizer(prompt, return_tensors="pt")
+        generated_ids = model.generate(**inputs)
+        model_out = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
+        out.append(model_out[0])
+        writer.writerows(out)
