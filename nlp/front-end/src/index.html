@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Face Generation by TechnoLynx</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="TechnoLynx">
+    <style></style>
+    <link rel="stylesheet" href="main.css">
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="index.js"></script>
+
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div id="head" class="col-6 col-lg-3">
+                <img src="../logo.png" class="img-fluid" alt="TechnoLynx logo">
+
+            </div>
+            <div id="head" class="col-6 col-lg-3">
+                <h1>Generate Faces</h1>
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div id="atrribute" class="col-6 col-lg-3 align-items-left">
+                <h2>Instructions</h2>
+                <p>Please select an attribute for each category</p>
+                <div class="row">
+                    <div class="accordion" id="accordionPanelsStayOpenExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true"
+                                    aria-controls="panelsStayOpen-collapseOne">
+                                    Skin features
+                                </button>
+                            </h2>
+                            <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show"
+                                aria-labelledby="panelsStayOpen-headingOne">
+                                <select id="race" class="form-select" aria-label="Default select example">
+                                    <option selected>Race</option>
+                                    <option value="1">White</option>
+                                    <option value="2">Asian</option>
+                                    <option value="3">Black</option>
+                                </select>
+                                <select id="refelction" class="form-select " aria-label="Default select example">
+                                    <option selected>Reflection</option>
+                                    <option value="1">Shiny skin</option>
+                                    <option value="2">Rosy cheeks</option>
+                                    <option value="3">Pale</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="panelsStayOpen-headingtwo">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true"
+                                    aria-controls="panelsStayOpen-collapseOne">
+                                    Hair features
+                                </button>
+                            </h2>
+                            <div id="panelsStayOpen-collapsetwo" class="accordion-collapse collapse show"
+                                aria-labelledby="panelsStayOpen-headingOne">
+                                <select id="hair_style" class="form-select" aria-label="Default select example">
+                                    <option selected>Style</option>
+                                    <option value="1">Bald</option>
+                                    <option value="2">Receding hairline</option>
+                                    <option value="3">Wavy hair</option>
+                                    <option value="4">Bangs</option>
+                                </select>
+                                <select id="facial_hair" class="form-select " aria-label="Default select example">
+                                    <option selected>Facial hair</option>
+                                    <option value="1">Beard</option>
+                                    <option value="2">Mustache</option>
+                                    <option value="3">5 o Clock Shadow</option>
+                                    <option value="4">Goatee</option>
+                                </select>
+                                <select id="hair_color" class="form-select " aria-label="Default select example">
+                                    <option selected>Color</option>
+                                    <option value="1">Black</option>
+                                    <option value="2">Blond</option>
+                                    <option value="3">Brown</option>
+                                    <option value="4">Gray</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="gen_img" class="col-6 col-lg-3 align-items-right">
+                <img id="generated_image" src="../michael-2.png" class="img-fluid" alt="Generated image">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div>
+            <form>
+            <div class="form-group">
+                <label for="exampleFormControlTextarea1">free written test</label>
+                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+            </div>
+            </form>
+        </div>
+    
+        <div class="row align-items-center">
+        <div class="d-grid gap-2 col-6 mx-auto">
+            <button id="gen_bt" onclick="pictureChange()" class="btn btn-primary" type="button">Generate</button>
+        </div>
+        
+    </div>
+
+    
+</body>
+
+</html>
