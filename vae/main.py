@@ -10,7 +10,7 @@ from tensorflow_addons.layers import SpectralNormalization, InstanceNormalizatio
 import os
 from tqdm import tqdm
 
-DATA_FOLDER = "datasets/celeba_hq_256"
+DATA_FOLDER = "../../archive/mini"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
 LEARNING_RATE = 0.00001
@@ -21,6 +21,7 @@ EPOCHS = 300
 VGG_LOSS_MULTIPLIER = 1
 RECON_LOSS_MULTIPLIER = 0.5
 KLD_LOSS_MULTIPLIER = 0.0001
+DISC_GEN_LOSS_MULTIPLIER = 0.0001
 
 
 def encoder_model():
@@ -38,6 +39,36 @@ def encoder_model():
     mean = SpectralNormalization(Dense(LATENT_DIM, kernel_initializer='he_normal'))(x)
     logvar = SpectralNormalization(Dense(LATENT_DIM, kernel_initializer='he_normal'))(x)
     return Model(inputs=image, outputs=[mean, logvar])
+
+
+def build_scale_discriminator():
+    # Input layer
+    image = Input(shape=(IMAGE_SIZE, IMAGE_SIZE, 3))
+
+    # Scale 1: 256x256
+    scale_1 = Conv2D(64, (4, 4), strides=(2, 2), padding='same')(image)
+    scale_1 = LeakyReLU(alpha=0.2)(scale_1)
+
+    # Scale 2: 128x128
+    scale_2 = Conv2D(128, (4, 4), strides=(2, 2), padding='same')(scale_1)
+    scale_2 = InstanceNormalization()(scale_2)
+    scale_2 = LeakyReLU(alpha=0.2)(scale_2)
+
+    # Scale 3: 64x64
+    scale_3 = Conv2D(256, (4, 4), strides=(2, 2), padding='same')(scale_2)
+    scale_3 = InstanceNormalization()(scale_3)
+    scale_3 = LeakyReLU(alpha=0.2)(scale_3)
+
+    # Scale 4: 32x32
+    scale_4 = Conv2D(512, (4, 4), strides=(2, 2), padding='same')(scale_3)
+    scale_4 = InstanceNormalization()(scale_4)
+    scale_4 = LeakyReLU(alpha=0.2)(scale_4)
+
+    # Output layer
+    output = Conv2D(1, (4, 4), padding='same')(scale_4)
+
+    return Model(inputs=image, outputs=output)
+
 
 
 def decoder_block(res, channels, lv, norm):
@@ -111,7 +142,7 @@ def load_batch(file_batch):
 def calc_metric(dataset_files):
     metric = tf.keras.metrics.MeanSquaredError()
     metric.reset_state()
-    dataset_files = np.random.choice(dataset_files, size=1000, replace=False)
+    # dataset_files = np.random.choice(dataset_files, size=1000, replace=False)
     dataset_files_batched = batch_array(dataset_files)
     for files in dataset_files_batched:
         images = load_batch(files)
@@ -127,7 +158,17 @@ def reparameterize(mean, logvar):
     return eps * std + mean
 
 
-def loss_fn(x, recons, mean, logvar):
+
+def discriminator_loss(real_disc_out, fake_disc_out):
+    disc_real_loss = cross_entropy(tf.ones_like(real_disc_out), real_disc_out)
+    disc_fake_loss = cross_entropy(tf.zeros_like(fake_disc_out), fake_disc_out)
+    disc_total_loss = disc_real_loss + disc_fake_loss
+    return disc_total_loss
+
+def loss_fn(x, recons, mean, logvar, fake_disc_out):
+    # discriminator loss
+    disc_gen_loss = cross_entropy(tf.ones_like(fake_disc_out), fake_disc_out)
+
     l1_loss = tf.keras.losses.MeanAbsoluteError()
     recon_loss = 0
     x_copy = tf.identity(x)
@@ -146,22 +187,29 @@ def loss_fn(x, recons, mean, logvar):
         vgg_loss += l1_loss(vgg_x[i], vgg_recon[i])
     vgg_loss /= len(vgg_x)
 
-    loss = RECON_LOSS_MULTIPLIER * recon_loss + VGG_LOSS_MULTIPLIER * vgg_loss + KLD_LOSS_MULTIPLIER * kld_loss
+    loss = RECON_LOSS_MULTIPLIER * recon_loss + VGG_LOSS_MULTIPLIER * vgg_loss + KLD_LOSS_MULTIPLIER * kld_loss + disc_gen_loss * DISC_GEN_LOSS_MULTIPLIER
     return loss
 
 
 def train_for_one_batch(batch):
     batch = batch.astype(np.float32) / 128 - 1
 
-    with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder:
+    with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder, tf.GradientTape() as disc_tape:
         mean, logvar = encoder(batch)
         latent = reparameterize(mean, logvar)
         recons = decoder(latent)
-        loss_value = loss_fn(batch, recons, mean, logvar)
+        real_disc_out = discriminator(batch, training=True)
+        fake_disc_out = discriminator(recons, training=True)
+
+        disc_loss = discriminator_loss(real_disc_out, fake_disc_out)
+
+        loss_value = loss_fn(batch, recons, mean, logvar, fake_disc_out, real_disc_out)
     gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
     optimizer.apply_gradients(zip(gradients, decoder.trainable_weights))
     gradients = tape_encoder.gradient(loss_value, encoder.trainable_weights)
     optimizer.apply_gradients(zip(gradients, encoder.trainable_weights))
+    gradients_disc =  disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+    optimizer_disc.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
     # with tf.GradientTape() as tape:
     #     latent2 = encoder(recon)
@@ -218,12 +266,26 @@ def test_random_latent():
         image = ((image.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
         cv2.imshow("generated image", image)
         cv2.waitKey(0)
+#
+# def discriminator_loss(real_output, fake_output):
+#     real_loss = cross_entropy(tf.ones_like(real_output), real_output)
+#     fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+#     total_loss = real_loss + fake_loss
+#     return total_loss
+# def generator_loss(fake_output):
+#     return cross_entropy(tf.ones_like(fake_output), fake_output)
 
 
 encoder = encoder_model()
 encoder.summary()
 decoder = decoder_model()
 decoder.summary()
+discriminator = build_scale_discriminator()
+cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE / 2)
+
+
+
 
 # encoder = keras.models.load_model("encoder.hd5")
 # encoder.summary()
