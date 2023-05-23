@@ -160,6 +160,7 @@ def reparameterize(mean, logvar):
 
 
 def discriminator_loss(real_disc_out, fake_disc_out):
+    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     disc_real_loss = cross_entropy(tf.ones_like(real_disc_out), real_disc_out)
     disc_fake_loss = cross_entropy(tf.zeros_like(fake_disc_out), fake_disc_out)
     disc_total_loss = disc_real_loss + disc_fake_loss
@@ -167,7 +168,9 @@ def discriminator_loss(real_disc_out, fake_disc_out):
 
 def loss_fn(x, recons, mean, logvar, fake_disc_out):
     # discriminator loss
-    disc_gen_loss = cross_entropy(tf.ones_like(fake_disc_out), fake_disc_out)
+    disc_labels = tf.ones_like(fake_disc_out)
+    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+    disc_gen_loss = cross_entropy(disc_labels, fake_disc_out)
 
     l1_loss = tf.keras.losses.MeanAbsoluteError()
     recon_loss = 0
@@ -198,18 +201,19 @@ def train_for_one_batch(batch):
         mean, logvar = encoder(batch)
         latent = reparameterize(mean, logvar)
         recons = decoder(latent)
+        gens = recons[-1]
         real_disc_out = discriminator(batch, training=True)
-        fake_disc_out = discriminator(recons, training=True)
+        fake_disc_out = discriminator(gens, training=True)
 
         disc_loss = discriminator_loss(real_disc_out, fake_disc_out)
 
-        loss_value = loss_fn(batch, recons, mean, logvar, fake_disc_out, real_disc_out)
+        loss_value = loss_fn(batch, recons, mean, logvar, fake_disc_out)
     gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
     optimizer.apply_gradients(zip(gradients, decoder.trainable_weights))
     gradients = tape_encoder.gradient(loss_value, encoder.trainable_weights)
     optimizer.apply_gradients(zip(gradients, encoder.trainable_weights))
-    gradients_disc =  disc_tape.gradient(disc_loss, discriminator.trainable_variables)
-    optimizer_disc.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+    gradients_disc = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+    optimizer_disc.apply_gradients(zip(gradients_disc, discriminator.trainable_variables))
 
     # with tf.GradientTape() as tape:
     #     latent2 = encoder(recon)
@@ -281,7 +285,7 @@ encoder.summary()
 decoder = decoder_model()
 decoder.summary()
 discriminator = build_scale_discriminator()
-cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+# cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE / 2)
 
 
