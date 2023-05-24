@@ -42,11 +42,11 @@ def loss_fn(x, recons, mean, logvar):
     return loss
 
 
-@tf.function
 def calc_metric(dataloader):
+    print("Evaluating metrics")
     metric.reset_state()
     batches = dataloader.load_random_batches(min(CALC_METRIC_NUM_BATCHES, dataloader.num_batches))
-    for batch in batches:
+    for batch in tqdm(batches):
         mean, _ = encoder(batch)
         metric.update_state(batch, decoder(mean)[-1])
     return metric.result()
