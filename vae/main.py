@@ -9,11 +9,12 @@ from keras.applications.vgg19 import VGG19
 from tensorflow_addons.layers import SpectralNormalization, InstanceNormalization
 import os
 from tqdm import tqdm
+from discriminator import Discriminator
 
 DATA_FOLDER = "../../archive/mini"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
-LEARNING_RATE = 0.00001
+LEARNING_RATE = 0.0001
 BATCH_SIZE = 8
 EPOCHS = 300
 
@@ -21,7 +22,7 @@ EPOCHS = 300
 VGG_LOSS_MULTIPLIER = 1
 RECON_LOSS_MULTIPLIER = 0.5
 KLD_LOSS_MULTIPLIER = 0.0001
-DISC_GEN_LOSS_MULTIPLIER = 0.0001
+GEN_LOSS_MULTIPLIER = 0.00005
 
 
 def encoder_model():
@@ -39,37 +40,6 @@ def encoder_model():
     mean = SpectralNormalization(Dense(LATENT_DIM, kernel_initializer='he_normal'))(x)
     logvar = SpectralNormalization(Dense(LATENT_DIM, kernel_initializer='he_normal'))(x)
     return Model(inputs=image, outputs=[mean, logvar])
-
-
-def build_scale_discriminator():
-    # Input layer
-    image = Input(shape=(IMAGE_SIZE, IMAGE_SIZE, 3))
-
-    # Scale 1: 256x256
-    scale_1 = Conv2D(64, (4, 4), strides=(2, 2), padding='same')(image)
-    scale_1 = LeakyReLU(alpha=0.2)(scale_1)
-
-    # Scale 2: 128x128
-    scale_2 = Conv2D(128, (4, 4), strides=(2, 2), padding='same')(scale_1)
-    scale_2 = InstanceNormalization()(scale_2)
-    scale_2 = LeakyReLU(alpha=0.2)(scale_2)
-
-    # Scale 3: 64x64
-    scale_3 = Conv2D(256, (4, 4), strides=(2, 2), padding='same')(scale_2)
-    scale_3 = InstanceNormalization()(scale_3)
-    scale_3 = LeakyReLU(alpha=0.2)(scale_3)
-
-    # Scale 4: 32x32
-    scale_4 = Conv2D(512, (4, 4), strides=(2, 2), padding='same')(scale_3)
-    scale_4 = InstanceNormalization()(scale_4)
-    scale_4 = LeakyReLU(alpha=0.2)(scale_4)
-
-    # Output layer
-    output = Conv2D(1, (4, 4), padding='same')(scale_4)
-
-    return Model(inputs=image, outputs=output)
-
-
 
 def decoder_block(res, channels, lv, norm):
     interpolation = 'nearest' if res.shape[1] < IMAGE_SIZE // 4 else 'bicubic'
@@ -159,19 +129,8 @@ def reparameterize(mean, logvar):
 
 
 
-def discriminator_loss(real_disc_out, fake_disc_out):
-    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-    disc_real_loss = cross_entropy(tf.ones_like(real_disc_out), real_disc_out)
-    disc_fake_loss = cross_entropy(tf.zeros_like(fake_disc_out), fake_disc_out)
-    disc_total_loss = disc_real_loss + disc_fake_loss
-    return disc_total_loss
 
 def loss_fn(x, recons, mean, logvar, fake_disc_out):
-    # discriminator loss
-    disc_labels = tf.ones_like(fake_disc_out)
-    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-    disc_gen_loss = cross_entropy(disc_labels, fake_disc_out)
-
     l1_loss = tf.keras.losses.MeanAbsoluteError()
     recon_loss = 0
     x_copy = tf.identity(x)
@@ -190,7 +149,7 @@ def loss_fn(x, recons, mean, logvar, fake_disc_out):
         vgg_loss += l1_loss(vgg_x[i], vgg_recon[i])
     vgg_loss /= len(vgg_x)
 
-    loss = RECON_LOSS_MULTIPLIER * recon_loss + VGG_LOSS_MULTIPLIER * vgg_loss + KLD_LOSS_MULTIPLIER * kld_loss + disc_gen_loss * DISC_GEN_LOSS_MULTIPLIER
+    loss = RECON_LOSS_MULTIPLIER * recon_loss + VGG_LOSS_MULTIPLIER * vgg_loss + KLD_LOSS_MULTIPLIER * kld_loss
     return loss
 
 
@@ -205,9 +164,11 @@ def train_for_one_batch(batch):
         real_disc_out = discriminator(batch, training=True)
         fake_disc_out = discriminator(gens, training=True)
 
-        disc_loss = discriminator_loss(real_disc_out, fake_disc_out)
+        disc_loss = Discriminator.discriminator_loss(real_disc_out, fake_disc_out)
+        gen_loss = Discriminator.discriminator_loss(real_disc_out, fake_disc_out)
 
         loss_value = loss_fn(batch, recons, mean, logvar, fake_disc_out)
+        loss_value = loss_value + gen_loss * GEN_LOSS_MULTIPLIER
     gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
     optimizer.apply_gradients(zip(gradients, decoder.trainable_weights))
     gradients = tape_encoder.gradient(loss_value, encoder.trainable_weights)
@@ -270,22 +231,13 @@ def test_random_latent():
         image = ((image.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
         cv2.imshow("generated image", image)
         cv2.waitKey(0)
-#
-# def discriminator_loss(real_output, fake_output):
-#     real_loss = cross_entropy(tf.ones_like(real_output), real_output)
-#     fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
-#     total_loss = real_loss + fake_loss
-#     return total_loss
-# def generator_loss(fake_output):
-#     return cross_entropy(tf.ones_like(fake_output), fake_output)
-
 
 encoder = encoder_model()
 encoder.summary()
 decoder = decoder_model()
 decoder.summary()
-discriminator = build_scale_discriminator()
-# cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+
+discriminator = Discriminator.build_discriminator(IMAGE_SIZE)
 optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE / 2)
 
 
