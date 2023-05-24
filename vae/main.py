@@ -45,7 +45,7 @@ def loss_fn(x, recons, mean, logvar):
 @tf.function
 def calc_metric(dataloader):
     metric.reset_state()
-    batches = dataloader.load_random_batches(CALC_METRIC_NUM_BATCHES)
+    batches = dataloader.load_random_batches(min(CALC_METRIC_NUM_BATCHES, dataloader.num_batches))
     for batch in batches:
         mean, _ = encoder(batch)
         metric.update_state(batch, decoder(mean)[-1])
@@ -75,12 +75,12 @@ def train():
             images = dataloader.load_next_batch()
             train_for_one_batch(images)
         mse.append(calc_metric(dataloader).numpy())
-        # encoder.save("encoder.hd5")
-        # decoder.save("decoder.hd5")
+        encoder.save("encoder.hd5")
+        decoder.save("decoder.hd5")
         print(f"MSE = {mse[-1]}")
 
-    encoder.save("encoder.hd5")
-    decoder.save("decoder.hd5")
+    # encoder.save("encoder.hd5")
+    # decoder.save("decoder.hd5")
     plt.plot(mse)
     plt.savefig('loss.png')
 
@@ -114,13 +114,13 @@ def test_random_latent():
         cv2.waitKey(0)
 
 
-DATA_FOLDER = "datasets/celeba_256_1"
+DATA_FOLDER = "datasets/celeba_256_1000"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
-BATCH_SIZE = 1
-CALC_METRIC_NUM_BATCHES = 1
+BATCH_SIZE = 16
+CALC_METRIC_NUM_BATCHES = 100
 LEARNING_RATE = 0.0001
-EPOCHS = 300
+EPOCHS = 10
 
 
 VGG_LOSS_MULTIPLIER = 1
