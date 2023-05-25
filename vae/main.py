@@ -107,7 +107,7 @@ def test_random_latent():
     decoder = keras.models.load_model("decoder.hd5")
     decoder.summary()
     while True:
-        latent = np.random.random((1, LATENT_DIM))
+        latent = np.random.normal(0, 0.05, (1, LATENT_DIM))
         image = decoder(latent)[-1].numpy()
         image = ((image.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
         cv2.imshow("generated image", image)
