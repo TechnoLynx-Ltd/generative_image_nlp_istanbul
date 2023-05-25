@@ -91,7 +91,8 @@ def train():
         mse.append(calc_metric(dataloader).numpy())
         encoder.save("encoder.hd5")
         decoder.save("decoder.hd5")
-        discriminator.save("discriminator.hd5")
+        if USE_DISCRIMINATOR:
+            discriminator.save("discriminator.hd5")
         print(f"MSE = {mse[-1]}")
 
     # encoder.save("encoder.hd5")
@@ -158,8 +159,8 @@ def test_interpolation():
         cv2.waitKey(0)
 
 
-DATA_FOLDER = "datasets/celeba_256_1000"
-# DATA_FOLDER = "../../archive/mini"
+# DATA_FOLDER = "datasets/celeba_256_1000"
+DATA_FOLDER = "../../archive/mini"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
 BATCH_SIZE = 16
