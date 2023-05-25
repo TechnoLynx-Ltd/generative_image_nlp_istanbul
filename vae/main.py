@@ -114,6 +114,35 @@ def test_random_latent():
         cv2.waitKey(0)
 
 
+def test_interpolation():
+    encoder = keras.models.load_model("encoder.hd5")
+    encoder.summary()
+    decoder = keras.models.load_model("decoder.hd5")
+    decoder.summary()
+    while True:
+        data_files = np.array(os.listdir(DATA_FOLDER))
+        data_files = np.random.choice(data_files, size=2, replace=False)
+        img1 = cv2.resize(cv2.imread(os.path.join(DATA_FOLDER, data_files[0])), (IMAGE_SIZE, IMAGE_SIZE))
+        img2 = cv2.resize(cv2.imread(os.path.join(DATA_FOLDER, data_files[1])), (IMAGE_SIZE, IMAGE_SIZE))
+        cv2.imshow("original1", img1)
+        cv2.imshow("original2", img2)
+        img1 = img1.astype(np.float32) / 128 - 1
+        img2 = img2.astype(np.float32) / 128 - 1
+        mean1, _ = encoder(img1.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
+        mean2, _ = encoder(img2.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
+        inter_mean = (mean1 + mean2) / 2
+        recon1 = decoder(mean1)[-1].numpy()
+        recon2 = decoder(mean2)[-1].numpy()
+        inter_recon = decoder(inter_mean)[-1].numpy()
+        recon1 = ((recon1.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
+        recon2 = ((recon2.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
+        inter_recon = ((inter_recon.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
+        cv2.imshow("reconstruction1", recon1)
+        cv2.imshow("reconstruction2", recon2)
+        cv2.imshow("interpolated", inter_recon)
+        cv2.waitKey(0)
+
+
 DATA_FOLDER = "datasets/celeba_256_1000"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
@@ -149,6 +178,7 @@ decoder.summary()
 # decoder = keras.models.load_model("decoder.hd5")
 # decoder.summary()
 
-train()
-test()
+# train()
+# test()
 # test_random_latent()
+test_interpolation()
