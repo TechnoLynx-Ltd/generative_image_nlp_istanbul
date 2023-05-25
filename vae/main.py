@@ -69,7 +69,7 @@ def train_for_one_batch(batch):
             gen_loss = Discriminator.generator_loss(fake_disc_out)
             print(f"gen_loss: {gen_loss}, disc_loss: {disc_loss}")
             # with tf.Session() as sess:  print(gen_loss.eval())
-            tf.print(gen_loss)
+            # tf.print(gen_loss)
             loss_value = loss_value + gen_loss * GEN_LOSS_MULTIPLIER
 
 
@@ -167,7 +167,7 @@ DATA_FOLDER = "../../dataset/images"
 # DATA_FOLDER = "../../archive/mini"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 CALC_METRIC_NUM_BATCHES = 100
 LEARNING_RATE = 0.0001
 EPOCHS = 10
