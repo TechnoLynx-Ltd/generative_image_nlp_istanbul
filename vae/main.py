@@ -158,8 +158,8 @@ def test_interpolation():
         cv2.waitKey(0)
 
 
-# DATA_FOLDER = "datasets/celeba_256_1000"
-DATA_FOLDER = "../../archive/mini"
+DATA_FOLDER = "datasets/celeba_256_1000"
+# DATA_FOLDER = "../../archive/mini"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
 BATCH_SIZE = 16
@@ -172,7 +172,7 @@ VGG_LOSS_MULTIPLIER = 1
 RECON_LOSS_MULTIPLIER = 1
 KLD_LOSS_MULTIPLIER = 0.0001
 GEN_LOSS_MULTIPLIER = 0.0001
-USE_DISCRIMINATOR = True
+USE_DISCRIMINATOR = False
 
 optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE / 2)
