@@ -163,8 +163,8 @@ def test_interpolation():
 
 
 # DATA_FOLDER = "datasets/celeba_256_1000"
-# DATA_FOLDER = "../../dataset/images"
-DATA_FOLDER = "../../archive/mini"
+DATA_FOLDER = "../../dataset/images"
+# DATA_FOLDER = "../../archive/mini"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
 BATCH_SIZE = 16
