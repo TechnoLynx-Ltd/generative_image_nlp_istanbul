@@ -3,12 +3,13 @@ import argparse
 import csv
 import cv2
 from pathlib import Path
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--metadata_path", default="../../VGGface2_HQ/MAAD_Face.csv")
 parser.add_argument("--images_path", default="../../VGGface2_HQ/VGGface2_None_norm_512_true_bygfpgan")
-parser.add_argument("--out_path", default="../../VGGface2_HQ/dataset")
-parser.add_argument("--max_count", default=500)
+parser.add_argument("--out_path", default="../../VGGface2_HQ/dataset", help="Output path, folder will be created automatically.")
+parser.add_argument("--max_count", default=5000)
 parser.add_argument("--img_per_id", default=3)
 args = parser.parse_args()
 
@@ -31,6 +32,8 @@ def check_row(row, filtered_rows):
 
 assert os.path.isfile(args.metadata_path)
 assert os.path.isdir(args.images_path)
+if os.path.isdir(args.out_path):
+    shutil.rmtree(args.out_path, ignore_errors=True)
 Path(args.out_path).mkdir(parents=True, exist_ok=True)
 Path(os.path.join(args.out_path, "images")).mkdir(parents=True, exist_ok=True)
 
