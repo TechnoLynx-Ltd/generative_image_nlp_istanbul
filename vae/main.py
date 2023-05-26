@@ -53,7 +53,7 @@ def calc_metric(dataloader):
     return metric.result()
 
 
-# @tf.function
+@tf.function
 def train_for_one_batch(batch):
     with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder, tf.GradientTape() as disc_tape:
         mean, logvar = encoder(batch)
