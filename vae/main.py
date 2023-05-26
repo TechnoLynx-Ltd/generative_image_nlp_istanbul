@@ -184,7 +184,7 @@ GEN_LOSS_MULTIPLIER = 1.0
 USE_DISCRIMINATOR = True
 
 optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
-optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE / 2)
+optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE)
 metric = tf.keras.metrics.MeanSquaredError()
 
 vgg19 = VGG19(include_top=False, weights='imagenet', input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3))

@@ -12,7 +12,7 @@ class Discriminator:
             disc_real_loss = cross_entropy(tf.ones_like(real_disc_out[i]), real_disc_out[i])
             disc_fake_loss = cross_entropy(tf.zeros_like(fake_disc_out[i]), fake_disc_out[i])
             disc_loss = disc_real_loss + disc_fake_loss
-            disc_loss_total += disc_loss
+            disc_loss_total += disc_loss / 2
         disc_loss_total /= 3
         return disc_loss_total
 
