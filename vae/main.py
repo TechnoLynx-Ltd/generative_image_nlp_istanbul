@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
@@ -10,12 +11,12 @@ from discriminator import Discriminator
 from dataloader import DataLoader
 from model import *
 
+
 @tf.function
 def reparameterize(mean, logvar):
     eps = tf.random.normal(shape=mean.shape)
     std = tf.exp(logvar * 0.5)
     return eps * std + mean
-
 
 
 @tf.function
@@ -89,91 +90,102 @@ def train():
             images = dataloader.load_next_batch()
             train_for_one_batch(images)
         mse.append(calc_metric(dataloader).numpy())
-        encoder.save("encoder.hd5")
-        decoder.save("decoder.hd5")
+        if not SAVE_ONLY_AT_END:
+            encoder.save("encoder.hd5")
+            decoder.save("decoder.hd5")
         if USE_DISCRIMINATOR:
             discriminator.save("discriminator.hd5")
         print(f"MSE = {mse[-1]}")
 
-    # encoder.save("encoder.hd5")
-    # decoder.save("decoder.hd5")
+    if SAVE_ONLY_AT_END:
+        encoder.save("encoder.hd5")
+        decoder.save("decoder.hd5")
     plt.plot(mse)
     plt.savefig('loss.png')
 
 
 def test():
-    encoder = keras.models.load_model("encoder.hd5")
-    encoder.summary()
-    decoder = keras.models.load_model("decoder.hd5")
-    decoder.summary()
     data_files = np.array(os.listdir(DATA_FOLDER))
     np.random.shuffle(data_files)
-    for file in tqdm(data_files):
-        image = cv2.resize(cv2.imread(os.path.join(DATA_FOLDER, file)), (IMAGE_SIZE, IMAGE_SIZE))
-        cv2.imshow("original", image)
-        image = image.astype(np.float32) / 128 - 1
-        mean, _ = encoder(image.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
-        recon = decoder(mean)[-1].numpy()
-        recon = ((recon.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
-        cv2.imshow("reconstruction", recon)
-        cv2.waitKey(0)
+    file = np.random.choice(data_files, size=1, replace=False)[0]
+    image = cv2.resize(cv2.imread(os.path.join(DATA_FOLDER, file)), (IMAGE_SIZE, IMAGE_SIZE))
+    cv2.imshow("original", image)
+    image = image.astype(np.float32) / 128 - 1
+    mean, _ = encoder(image.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
+    recon = decoder(mean)[-1].numpy()
+    recon = ((recon.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
+    cv2.imshow("reconstruction", recon)
+    cv2.waitKey(0)
 
 
 def test_random_latent():
-    decoder = keras.models.load_model("decoder.hd5")
-    decoder.summary()
-    while True:
-        latent = np.random.normal(0, 0.05, (1, LATENT_DIM))
-        image = decoder(latent)[-1].numpy()
-        image = ((image.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
-        cv2.imshow("generated image", image)
-        cv2.waitKey(0)
+    latent = np.random.normal(0, 0.05, (1, LATENT_DIM))
+    image = decoder(latent)[-1].numpy()
+    image = ((image.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
+    cv2.imshow("generated image", image)
+    cv2.waitKey(0)
 
 
 def test_interpolation():
-    encoder = keras.models.load_model("encoder.hd5")
-    encoder.summary()
-    decoder = keras.models.load_model("decoder.hd5")
-    decoder.summary()
-    while True:
-        data_files = np.array(os.listdir(DATA_FOLDER))
-        data_files = np.random.choice(data_files, size=2, replace=False)
-        img1 = cv2.resize(cv2.imread(os.path.join(DATA_FOLDER, data_files[0])), (IMAGE_SIZE, IMAGE_SIZE))
-        img2 = cv2.resize(cv2.imread(os.path.join(DATA_FOLDER, data_files[1])), (IMAGE_SIZE, IMAGE_SIZE))
-        cv2.imshow("original1", img1)
-        cv2.imshow("original2", img2)
-        img1 = img1.astype(np.float32) / 128 - 1
-        img2 = img2.astype(np.float32) / 128 - 1
-        mean1, _ = encoder(img1.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
-        mean2, _ = encoder(img2.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
-        inter_mean = (mean1 + mean2) / 2
-        recon1 = decoder(mean1)[-1].numpy()
-        recon2 = decoder(mean2)[-1].numpy()
-        inter_recon = decoder(inter_mean)[-1].numpy()
-        recon1 = ((recon1.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
-        recon2 = ((recon2.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
-        inter_recon = ((inter_recon.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
-        cv2.imshow("reconstruction1", recon1)
-        cv2.imshow("reconstruction2", recon2)
-        cv2.imshow("interpolated", inter_recon)
-        cv2.waitKey(0)
+    data_files = np.array(os.listdir(DATA_FOLDER))
+    data_files = np.random.choice(data_files, size=2, replace=False)
+    img1 = cv2.resize(cv2.imread(os.path.join(DATA_FOLDER, data_files[0])), (IMAGE_SIZE, IMAGE_SIZE))
+    img2 = cv2.resize(cv2.imread(os.path.join(DATA_FOLDER, data_files[1])), (IMAGE_SIZE, IMAGE_SIZE))
+    cv2.imshow("original1", img1)
+    cv2.imshow("original2", img2)
+    img1 = img1.astype(np.float32) / 128 - 1
+    img2 = img2.astype(np.float32) / 128 - 1
+    mean1, _ = encoder(img1.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
+    mean2, _ = encoder(img2.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
+    inter_mean = (mean1 + mean2) / 2
+    recon1 = decoder(mean1)[-1].numpy()
+    recon2 = decoder(mean2)[-1].numpy()
+    inter_recon = decoder(inter_mean)[-1].numpy()
+    recon1 = ((recon1.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
+    recon2 = ((recon2.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
+    inter_recon = ((inter_recon.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
+    cv2.imshow("reconstruction1", recon1)
+    cv2.imshow("reconstruction2", recon2)
+    cv2.imshow("interpolated", inter_recon)
+    cv2.waitKey(0)
 
 
-# DATA_FOLDER = "datasets/celeba_256_1000"
-DATA_FOLDER = "../../archive/mini"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
-BATCH_SIZE = 16
-CALC_METRIC_NUM_BATCHES = 100
-LEARNING_RATE = 0.0001
-EPOCHS = 10
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--train', action='store_true', help='Run training')
+parser.add_argument('--test', action='store_true', help='Test model for an image from the training dataset')
+parser.add_argument('--test_random_latent', action='store_true', help='Test model for a randomly generated latent vector')
+parser.add_argument('--test_interpolation', action='store_true', help='Test model for two different images from the training dataset, then interpolate between them')
+parser.add_argument('--data_path', default='datasets/dataset_5k', type=str, help='Path to the training dataset')
+parser.add_argument('--batch_size', default=16, type=int, help='Batch size for training')
+parser.add_argument('--calc_metric_num_batches', default=100, type=int, help='Number of batches to evaluate metrics on after each epoch')
+parser.add_argument('--learning_rate', default=0.0001, type=float, help='Learning rate for training')
+parser.add_argument('--epochs', default=100, type=int, help='Number of epochs to train for')
+parser.add_argument('--vgg_loss_mul', default=1, type=float, help='Multiplier of VGG loss during training')
+parser.add_argument('--recon_loss_mul', default=1, type=float, help='Multiplier of reconstruction loss during training')
+parser.add_argument('--kld_loss_mul', default=0.0001, type=float, help='Multiplier of KL divergence loss during training')
+parser.add_argument('--gen_loss_mul', default=0.0001, type=float, help='Multiplier of adversarial loss during training')
+parser.add_argument('--use_discriminator', action='store_true', help='Use discriminator during training')
+parser.add_argument('--restart_training', action='store_true', help='If set, load a blank model and restart the training. If not set, reload the existing model and continue the training.')
+parser.add_argument('--save_only_at_end', action='store_true', help='If set, only save the model after the whole training process is finished. If not set, save model after each epoch.')
+args = parser.parse_args()
 
 
-VGG_LOSS_MULTIPLIER = 1
-RECON_LOSS_MULTIPLIER = 1
-KLD_LOSS_MULTIPLIER = 0.0001
-GEN_LOSS_MULTIPLIER = 0.0001
-USE_DISCRIMINATOR = False
+DATA_FOLDER = args.data_path
+BATCH_SIZE = args.batch_size
+CALC_METRIC_NUM_BATCHES = args.calc_metric_num_batches
+LEARNING_RATE = args.learning_rate
+EPOCHS = args.epochs
+
+
+VGG_LOSS_MULTIPLIER = args.vgg_loss_mul
+RECON_LOSS_MULTIPLIER = args.recon_loss_mul
+KLD_LOSS_MULTIPLIER = args.kld_loss_mul
+GEN_LOSS_MULTIPLIER = args.gen_loss_mul
+USE_DISCRIMINATOR = args.use_discriminator
+SAVE_ONLY_AT_END = args.save_only_at_end
 
 optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE / 2)
@@ -185,12 +197,18 @@ vgg19_selectedOutputs = [vgg19.layers[i].output for i in vgg19_selectedLayers]
 vgg19 = Model(vgg19.inputs, vgg19_selectedOutputs)
 
 
-encoder = encoder_model(LATENT_DIM)
-encoder.compile(optimizer)
-encoder.summary()
-decoder = decoder_model(LATENT_DIM)
-decoder.compile(optimizer)
-decoder.summary()
+if args.restart_training:
+    encoder = encoder_model(LATENT_DIM)
+    encoder.compile(optimizer)
+    encoder.summary()
+    decoder = decoder_model(LATENT_DIM)
+    decoder.compile(optimizer)
+    decoder.summary()
+else:
+    encoder = keras.models.load_model("encoder.hd5")
+    encoder.summary()
+    decoder = keras.models.load_model("decoder.hd5")
+    decoder.summary()
 
 if USE_DISCRIMINATOR:
     discriminator = Discriminator.build_discriminator(IMAGE_SIZE)
@@ -198,15 +216,11 @@ if USE_DISCRIMINATOR:
     discriminator.summary()
 
 
-
-
-
-# encoder = keras.models.load_model("encoder.hd5")
-# encoder.summary()
-# decoder = keras.models.load_model("decoder.hd5")
-# decoder.summary()
-
-train()
-# test()
-# test_random_latent()
-test_interpolation()
+if args.train:
+    train()
+if args.test:
+    test()
+if args.test_random_latent:
+    test_random_latent()
+if args.test_interpolation:
+    test_interpolation()
