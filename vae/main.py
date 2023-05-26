@@ -67,9 +67,15 @@ def train_for_one_batch(batch):
             fake_disc_out = discriminator(gens, training=True)
 
             disc_loss = Discriminator.discriminator_loss(real_disc_out, fake_disc_out)
-            gen_loss = Discriminator.discriminator_loss(real_disc_out, fake_disc_out)
-            loss_value = loss_value + gen_loss * GEN_LOSS_MULTIPLIER
 
+            gen_loss = Discriminator.generator_loss(fake_disc_out)
+            # acle if needed
+            disc_loss_mult = 1.0
+            disc_loss *= disc_loss_mult
+            print(f"gen_loss: {gen_loss * GEN_LOSS_MULTIPLIER}, disc_loss: {disc_loss}, non_gan_losses: {loss_value}")
+            # with tf.Session() as sess:  print(gen_loss.eval())
+            # tf.print(gen_loss)
+            loss_value = loss_value + gen_loss * GEN_LOSS_MULTIPLIER
 
     gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
     optimizer.apply_gradients(zip(gradients, decoder.trainable_weights))
@@ -156,29 +162,33 @@ LATENT_DIM = 256
 parser = argparse.ArgumentParser()
 parser.add_argument('--train', action='store_true', help='Run training')
 parser.add_argument('--test', action='store_true', help='Test model for an image from the training dataset')
-parser.add_argument('--test_random_latent', action='store_true', help='Test model for a randomly generated latent vector')
-parser.add_argument('--test_interpolation', action='store_true', help='Test model for two different images from the training dataset, then interpolate between them')
+parser.add_argument('--test_random_latent', action='store_true',
+                    help='Test model for a randomly generated latent vector')
+parser.add_argument('--test_interpolation', action='store_true',
+                    help='Test model for two different images from the training dataset, then interpolate between them')
 parser.add_argument('--data_path', default='datasets/dataset_5k', type=str, help='Path to the training dataset')
 parser.add_argument('--batch_size', default=16, type=int, help='Batch size for training')
-parser.add_argument('--calc_metric_num_batches', default=100, type=int, help='Number of batches to evaluate metrics on after each epoch')
+parser.add_argument('--calc_metric_num_batches', default=100, type=int,
+                    help='Number of batches to evaluate metrics on after each epoch')
 parser.add_argument('--learning_rate', default=0.0001, type=float, help='Learning rate for training')
 parser.add_argument('--epochs', default=100, type=int, help='Number of epochs to train for')
 parser.add_argument('--vgg_loss_mul', default=1, type=float, help='Multiplier of VGG loss during training')
 parser.add_argument('--recon_loss_mul', default=1, type=float, help='Multiplier of reconstruction loss during training')
-parser.add_argument('--kld_loss_mul', default=0.0001, type=float, help='Multiplier of KL divergence loss during training')
+parser.add_argument('--kld_loss_mul', default=0.0001, type=float,
+                    help='Multiplier of KL divergence loss during training')
 parser.add_argument('--gen_loss_mul', default=0.0001, type=float, help='Multiplier of adversarial loss during training')
 parser.add_argument('--use_discriminator', action='store_true', help='Use discriminator during training')
-parser.add_argument('--restart_training', action='store_true', help='If set, load a blank model and restart the training. If not set, reload the existing model and continue the training.')
-parser.add_argument('--save_only_at_end', action='store_true', help='If set, only save the model after the whole training process is finished. If not set, save model after each epoch.')
+parser.add_argument('--restart_training', action='store_true',
+                    help='If set, load a blank model and restart the training. If not set, reload the existing model and continue the training.')
+parser.add_argument('--save_only_at_end', action='store_true',
+                    help='If set, only save the model after the whole training process is finished. If not set, save model after each epoch.')
 args = parser.parse_args()
-
 
 DATA_FOLDER = args.data_path
 BATCH_SIZE = args.batch_size
 CALC_METRIC_NUM_BATCHES = args.calc_metric_num_batches
 LEARNING_RATE = args.learning_rate
 EPOCHS = args.epochs
-
 
 VGG_LOSS_MULTIPLIER = args.vgg_loss_mul
 RECON_LOSS_MULTIPLIER = args.recon_loss_mul
@@ -188,14 +198,13 @@ USE_DISCRIMINATOR = args.use_discriminator
 SAVE_ONLY_AT_END = args.save_only_at_end
 
 optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
-optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE / 2)
+optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE)
 metric = tf.keras.metrics.MeanSquaredError()
 
 vgg19 = VGG19(include_top=False, weights='imagenet', input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3))
 vgg19_selectedLayers = [1, 2, 9, 10, 17, 18]
 vgg19_selectedOutputs = [vgg19.layers[i].output for i in vgg19_selectedLayers]
 vgg19 = Model(vgg19.inputs, vgg19_selectedOutputs)
-
 
 if args.restart_training:
     encoder = encoder_model(LATENT_DIM)
@@ -214,7 +223,6 @@ if USE_DISCRIMINATOR:
     discriminator = Discriminator.build_discriminator(IMAGE_SIZE)
     discriminator.compile(optimizer_disc)
     discriminator.summary()
-
 
 if args.train:
     train()
