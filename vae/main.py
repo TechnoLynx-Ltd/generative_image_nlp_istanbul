@@ -52,7 +52,7 @@ def calc_metric(dataloader):
     return metric.result()
 
 
-@tf.function
+# @tf.function
 def train_for_one_batch(batch):
     with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder, tf.GradientTape() as disc_tape:
         mean, logvar = encoder(batch)
@@ -66,8 +66,12 @@ def train_for_one_batch(batch):
             fake_disc_out = discriminator(gens, training=True)
 
             disc_loss = Discriminator.discriminator_loss(real_disc_out, fake_disc_out)
+
             gen_loss = Discriminator.generator_loss(fake_disc_out)
-            # print(f"gen_loss: {gen_loss}, disc_loss: {disc_loss}")
+            # acle if needed
+            disc_loss_mult = 1.0
+            disc_loss *= disc_loss_mult
+            print(f"gen_loss: {gen_loss * GEN_LOSS_MULTIPLIER}, disc_loss: {disc_loss}, non_gan_losses: {loss_value}")
             # with tf.Session() as sess:  print(gen_loss.eval())
             # tf.print(gen_loss)
             loss_value = loss_value + gen_loss * GEN_LOSS_MULTIPLIER
@@ -162,12 +166,12 @@ def test_interpolation():
         cv2.waitKey(0)
 
 
-DATA_FOLDER = "datasets/celeba_256_1000"
+# DATA_FOLDER = "datasets/celeba_256_1000"
 # DATA_FOLDER = "../../dataset/images"
-# DATA_FOLDER = "../../archive/mini"
+DATA_FOLDER = "../../archive/mini"
 IMAGE_SIZE = 256
 LATENT_DIM = 256
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 CALC_METRIC_NUM_BATCHES = 100
 LEARNING_RATE = 0.0001
 EPOCHS = 10
@@ -176,8 +180,8 @@ EPOCHS = 10
 VGG_LOSS_MULTIPLIER = 1
 RECON_LOSS_MULTIPLIER = 1
 KLD_LOSS_MULTIPLIER = 0.0001
-GEN_LOSS_MULTIPLIER = 0.0001
-USE_DISCRIMINATOR = False
+GEN_LOSS_MULTIPLIER = 1.0
+USE_DISCRIMINATOR = True
 
 optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 optimizer_disc = tf.keras.optimizers.legacy.Adam(learning_rate=LEARNING_RATE / 2)
