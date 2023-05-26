@@ -5,6 +5,7 @@ from tensorflow_addons.layers import SpectralNormalization, InstanceNormalizatio
 
 class Discriminator:
     @staticmethod
+    @tf.function
     def discriminator_loss(real_disc_out, fake_disc_out):
         cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
         disc_loss_total = 0.0
@@ -17,6 +18,7 @@ class Discriminator:
         return disc_loss_total
 
     @staticmethod
+    @tf.function
     def generator_loss(fake_disc_out):
         cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
         gen_loss_total = 0.0
