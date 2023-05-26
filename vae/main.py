@@ -53,9 +53,10 @@ def calc_metric(dataloader):
     return metric.result()
 
 
-# @tf.function
+@tf.function
 def train_for_one_batch(batch):
     with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder, tf.GradientTape() as disc_tape:
+        loss_dict = {}
         mean, logvar = encoder(batch)
         latent = reparameterize(mean, logvar)
         recons = decoder(latent)
@@ -69,10 +70,11 @@ def train_for_one_batch(batch):
             disc_loss = Discriminator.discriminator_loss(real_disc_out, fake_disc_out)
 
             gen_loss = Discriminator.generator_loss(fake_disc_out)
+            loss_dict["gen_loss"] = gen_loss
             # acle if needed
             disc_loss_mult = 1.0
             disc_loss *= disc_loss_mult
-            print(f"gen_loss: {gen_loss * GEN_LOSS_MULTIPLIER}, disc_loss: {disc_loss}, non_gan_losses: {loss_value}")
+            # print(f"gen_loss: {gen_loss * GEN_LOSS_MULTIPLIER}, disc_loss: {disc_loss}, non_gan_losses: {loss_value}")
             # with tf.Session() as sess:  print(gen_loss.eval())
             # tf.print(gen_loss)
             loss_value = loss_value + gen_loss * GEN_LOSS_MULTIPLIER
@@ -84,6 +86,7 @@ def train_for_one_batch(batch):
     if USE_DISCRIMINATOR:
         gradients_disc = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
         optimizer_disc.apply_gradients(zip(gradients_disc, discriminator.trainable_variables))
+    return loss_dict
 
 
 def train():
@@ -94,7 +97,11 @@ def train():
         dataloader.init_dataloader()
         for _ in tqdm(range(dataloader.num_batches)):
             images = dataloader.load_next_batch()
-            train_for_one_batch(images)
+            loss_dict = train_for_one_batch(images)
+            print("printing loss dict")
+            gen_loss = loss_dict["gen_loss"]
+            val = gen_loss.numpy()
+            print(loss_dict)
         mse.append(calc_metric(dataloader).numpy())
         if not SAVE_ONLY_AT_END:
             encoder.save("encoder.hd5")
@@ -176,7 +183,7 @@ parser.add_argument('--vgg_loss_mul', default=1, type=float, help='Multiplier of
 parser.add_argument('--recon_loss_mul', default=1, type=float, help='Multiplier of reconstruction loss during training')
 parser.add_argument('--kld_loss_mul', default=0.0001, type=float,
                     help='Multiplier of KL divergence loss during training')
-parser.add_argument('--gen_loss_mul', default=0.0001, type=float, help='Multiplier of adversarial loss during training')
+parser.add_argument('--gen_loss_mul', default=1.0, type=float, help='Multiplier of adversarial loss during training')
 parser.add_argument('--use_discriminator', action='store_true', help='Use discriminator during training')
 parser.add_argument('--restart_training', action='store_true',
                     help='If set, load a blank model and restart the training. If not set, reload the existing model and continue the training.')
