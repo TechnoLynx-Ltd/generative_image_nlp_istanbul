@@ -19,7 +19,7 @@ function load_img()
 
 }
 function pictureChange() {
-
+    
     document.getElementById("generated_image").src = '../michael-1.jpg';
 }
 
@@ -28,5 +28,5 @@ function tabular_data_creation() {
 }
 function interpolate_latents()
 {
-    
+
 }
