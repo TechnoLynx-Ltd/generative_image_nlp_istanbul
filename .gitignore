@@ -1,3 +1,4 @@
-nlp/front-end/node_modules/
-*.png
+michael-2.png
+/nlp/front-end/node_modules
 *.jpg
+*.png
