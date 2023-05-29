@@ -7,3 +7,4 @@
 vae/data/
 vae/encoder.hd5/
 *.csv
+website/node_modules

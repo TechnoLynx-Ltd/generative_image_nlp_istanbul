@@ -36,7 +36,7 @@ for j in range(49):
     if j != 1:
         cols_names.append(Metadata.dtype.names[j])
 cols_names.append('latent_vector')
-with open("vae\latent.csv", "w", newline="") as f:
+with open("website\resources\latent.csv", "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(cols_names)
     for i in range(Metadata.shape[0]):
@@ -68,14 +68,12 @@ f.close()
 young_latent /= young_count
 middleAge_latent /= middleAge_count
 senior_latent /= senior_count
-with open("vae\latent_avg.csv", "w", newline="") as l:
+with open("website\resources\latent_avg.csv", "w", newline="") as l:
     writer_l = csv.writer(l)
     writer_l.writerow(young_latent)
     writer_l.writerow(middleAge_latent)
     writer_l.writerow(senior_latent)
-        
 
-            
 
 
 
