@@ -13,7 +13,7 @@
 
 </head>
 
-<body>
+<body onload="init()">
     <div class="container-fluid">
         <div class="row align-items-center">
             <div id="head" class="col-4 col-lg-2">
@@ -27,7 +27,7 @@
             <h2>Instructions</h2>
             <p>Please select an attribute from each category</p>
         <div class="row align-items-center">
-            <label for="customRange" class="form-label" id="age_label">Age</label>
+            <label for="ageRange" class="form-label" id="age_label">Age</label>
             <div class="col-4 col-lg-2">
                 <p>Young</p>
             </div>
@@ -37,7 +37,7 @@
             <div class="col-4 col-lg-2 ">
                 <p id="s_label">Senior</p>
             </div>
-            <input type="range" class="form-range" min="0" max="10" step="1" id="customRange" value="0">
+            <input type="range" class="form-range" min="0" max="10" step="1" id="ageRange" value="0">
         </div>
         <div class="row align-items-center">
             <div id="atrribute" class="col-6 col-lg-3 align-items-left">
