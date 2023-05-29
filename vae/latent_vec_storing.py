@@ -3,11 +3,10 @@ import keras
 import csv
 import cv2
 import os
-from numpy import linspace
 
 def latent_interpolate(vec1, vec2, inter_steps=5):
     inter_vectors = []
-    ratios = linspace(0 , 1, num=inter_steps)
+    ratios = np.linspace(0 , 1, num=inter_steps)
     for ratio in ratios:
         vec = (1.0 - ratio) * vec1 + ratio * vec2
         inter_vectors.append(vec)
@@ -15,6 +14,7 @@ def latent_interpolate(vec1, vec2, inter_steps=5):
 
 
 IMAGE_SIZE = 256
+selected_attributes = [0, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 32, 37, 40]
 cols_names =[]
 out_row = []
 # male_count = 0
