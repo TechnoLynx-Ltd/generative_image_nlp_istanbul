@@ -21,6 +21,7 @@ def reparameterize(mean, logvar):
 
 @tf.function
 def loss_fn(x, recons, mean, logvar):
+    loss_dict = {}
     l1_loss = tf.keras.losses.MeanAbsoluteError()
     recon_loss = 0
     x_copy = tf.identity(x)
@@ -28,9 +29,11 @@ def loss_fn(x, recons, mean, logvar):
         recon_loss += l1_loss(level, x_copy)
         x_copy = tf.image.resize(x_copy, (x_copy.shape[1] // 2, x_copy.shape[2] // 2), method='bicubic')
     recon_loss /= len(recons)
+    loss_dict["l1"] = recon_loss
 
     kld_loss = -0.5 * tf.reduce_sum(1 + logvar - tf.pow(mean, 2) - tf.exp(logvar))
     kld_loss /= BATCH_SIZE
+    loss_dict["kld"] = kld_loss
 
     vgg_loss = 0
     vgg_x = vgg19(x)
@@ -38,9 +41,10 @@ def loss_fn(x, recons, mean, logvar):
     for i in range(len(vgg_x)):
         vgg_loss += l1_loss(vgg_x[i], vgg_recon[i])
     vgg_loss /= len(vgg_x)
+    loss_dict["vgg"] = vgg_loss
 
     loss = RECON_LOSS_MULTIPLIER * recon_loss + VGG_LOSS_MULTIPLIER * vgg_loss + KLD_LOSS_MULTIPLIER * kld_loss
-    return loss
+    return loss, loss_dict
 
 
 def calc_metric(dataloader):
@@ -56,27 +60,23 @@ def calc_metric(dataloader):
 @tf.function
 def train_for_one_batch(batch):
     with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder, tf.GradientTape() as disc_tape:
-        loss_dict = {}
         mean, logvar = encoder(batch)
         latent = reparameterize(mean, logvar)
         recons = decoder(latent)
         gens = recons[-1]
-        loss_value = loss_fn(batch, recons, mean, logvar)
+        loss_value, loss_dict = loss_fn(batch, recons, mean, logvar)
 
         if USE_DISCRIMINATOR:
             real_disc_out = discriminator(batch, training=True)
             fake_disc_out = discriminator(gens, training=True)
 
             disc_loss = Discriminator.discriminator_loss(real_disc_out, fake_disc_out)
-
+            loss_dict["disc_loss"] = disc_loss
             gen_loss = Discriminator.generator_loss(fake_disc_out)
             loss_dict["gen_loss"] = gen_loss
-            # acle if needed
+            # sacle if needed
             disc_loss_mult = 1.0
             disc_loss *= disc_loss_mult
-            # print(f"gen_loss: {gen_loss * GEN_LOSS_MULTIPLIER}, disc_loss: {disc_loss}, non_gan_losses: {loss_value}")
-            # with tf.Session() as sess:  print(gen_loss.eval())
-            # tf.print(gen_loss)
             loss_value = loss_value + gen_loss * GEN_LOSS_MULTIPLIER
 
     gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
@@ -98,11 +98,16 @@ def train():
         for _ in tqdm(range(dataloader.num_batches)):
             images = dataloader.load_next_batch()
             loss_dict = train_for_one_batch(images)
-            print("printing loss dict")
-            gen_loss = loss_dict["gen_loss"]
-            val = gen_loss.numpy()
-            print(loss_dict)
+
+            gen_loss = loss_dict["gen_loss"].numpy()
+            disc_loss = loss_dict["disc_loss"].numpy()
+            kld_loss = loss_dict["kld"].numpy()
+            l1_loss = loss_dict["l1"].numpy()
+            vgg_loss = loss_dict["vgg"].numpy()
+            print(f"gen_loss: {gen_loss}, disc_loss: {disc_loss}, l1: {l1_loss}, kld: {kld_loss}, vgg: {vgg_loss}")
+            print(gen_loss)
         mse.append(calc_metric(dataloader).numpy())
+        log_test_image(os.path.join(args.image_log_path, f"{epoch}_test_img.jpg"))
         if not SAVE_ONLY_AT_END:
             encoder.save("encoder.hd5")
             decoder.save("decoder.hd5")
@@ -130,6 +135,18 @@ def test():
     cv2.imshow("reconstruction", recon)
     cv2.waitKey(0)
 
+
+def log_test_image(filename):
+    data_files = np.array(os.listdir(DATA_FOLDER))
+    np.random.shuffle(data_files)
+    file = np.random.choice(data_files, size=1, replace=False)[0]
+    image = cv2.resize(cv2.imread(os.path.join(DATA_FOLDER, file)), (IMAGE_SIZE, IMAGE_SIZE))
+
+    image = image.astype(np.float32) / 128 - 1
+    mean, _ = encoder(image.reshape(1, IMAGE_SIZE, IMAGE_SIZE, 3))
+    recon = decoder(mean)[-1].numpy()
+    recon = ((recon.reshape(IMAGE_SIZE, IMAGE_SIZE, 3) + 1) * 128).clip(0, 255).astype(np.uint8)
+    cv2.imwrite(filename, recon)
 
 def test_random_latent():
     latent = np.random.normal(0, 0.05, (1, LATENT_DIM))
@@ -174,6 +191,7 @@ parser.add_argument('--test_random_latent', action='store_true',
 parser.add_argument('--test_interpolation', action='store_true',
                     help='Test model for two different images from the training dataset, then interpolate between them')
 parser.add_argument('--data_path', default='datasets/dataset_5k', type=str, help='Path to the training dataset')
+parser.add_argument('--image_log_path', default='./logged_images', type=str, help='Path to the save logged images.')
 parser.add_argument('--batch_size', default=16, type=int, help='Batch size for training')
 parser.add_argument('--calc_metric_num_batches', default=100, type=int,
                     help='Number of batches to evaluate metrics on after each epoch')
