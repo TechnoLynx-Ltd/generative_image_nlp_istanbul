@@ -5,7 +5,7 @@ import albumentations as A
 
 
 class DataLoader:
-    def __init__(self, data_dir, image_size, batch_size):
+    def __init__(self, data_dir, image_size, batch_size, use_aug=False):
         self.data_dir = data_dir
         self.data_files = np.array([os.path.join(data_dir, file) for file in os.listdir(data_dir)])
         self.batched_data_files = []
@@ -14,6 +14,7 @@ class DataLoader:
         self.index = 0
         self.num_batches = -1
         self.data_end = True
+        self.use_aug = use_aug
         self.image_transform = A.Compose([
             A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=40, val_shift_limit=20, p=0.5),
             A.CLAHE(clip_limit=(1, 4), tile_grid_size=(8, 8), p=0.3),
@@ -44,7 +45,10 @@ class DataLoader:
         for file in self.batched_data_files[self.index]:
             img = cv2.imread(file)
             img = cv2.resize(img, (self.image_size, self.image_size))
-            self.image_transform(image=img)
+
+            if self.use_aug:
+                transformed = self.image_transform(image=img)
+                img = transformed['image']
 
             img = img.astype(np.float32) / 128 - 1
             out.append(img)

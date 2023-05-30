@@ -100,7 +100,7 @@ def train_for_one_batch(batch):
 
 
 def train():
-    dataloader = DataLoader(DATA_FOLDER, IMAGE_SIZE, BATCH_SIZE)
+    dataloader = DataLoader(DATA_FOLDER, IMAGE_SIZE, BATCH_SIZE, args.use_aug)
     mse = []
     for epoch in range(EPOCHS):
         print(f"EPOCH {epoch}")
@@ -215,7 +215,7 @@ parser.add_argument('--kld_loss_mul', default=0.0001, type=float,
                     help='Multiplier of KL divergence loss during training')
 parser.add_argument('--gen_loss_mul', default=1.0, type=float, help='Multiplier of adversarial loss during training')
 parser.add_argument('--use_discriminator', action='store_true', help='Use discriminator during training')
-parser.add_argument('--no_augmentation', action='store_true', help='Set this to turn augmentation off.')
+parser.add_argument('--use_aug', action='store_true', help='Set this to turn augmentation on.')
 parser.add_argument('--restart_training', action='store_true',
                     help='If set, load a blank model and restart the training. If not set, reload the existing model and continue the training.')
 parser.add_argument('--save_only_at_end', action='store_true',
