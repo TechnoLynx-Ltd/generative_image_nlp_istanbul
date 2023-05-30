@@ -59,14 +59,13 @@ def calc_metric(dataloader):
 
 @tf.function
 def train_for_one_batch(batch):
-    with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder, tf.GradientTape() as disc_tape:
-        mean, logvar = encoder(batch)
-        latent = reparameterize(mean, logvar)
-        recons = decoder(latent)
-        gens = recons[-1]
-        loss_value, loss_dict = loss_fn(batch, recons, mean, logvar)
-
-        if USE_DISCRIMINATOR:
+    if USE_DISCRIMINATOR:
+        with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder, tf.GradientTape() as disc_tape:
+            mean, logvar = encoder(batch)
+            latent = reparameterize(mean, logvar)
+            recons = decoder(latent)
+            gens = recons[-1]
+            loss_value, loss_dict = loss_fn(batch, recons, mean, logvar)
             real_disc_out = discriminator(batch, training=True)
             fake_disc_out = discriminator(gens, training=True)
 
@@ -74,19 +73,30 @@ def train_for_one_batch(batch):
             loss_dict["disc_loss"] = disc_loss
             gen_loss = Discriminator.generator_loss(fake_disc_out)
             loss_dict["gen_loss"] = gen_loss
-            # sacle if needed
             disc_loss_mult = 1.0
             disc_loss *= disc_loss_mult
             loss_value = loss_value + gen_loss * GEN_LOSS_MULTIPLIER
 
-    gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
-    optimizer.apply_gradients(zip(gradients, decoder.trainable_weights))
-    gradients = tape_encoder.gradient(loss_value, encoder.trainable_weights)
-    optimizer.apply_gradients(zip(gradients, encoder.trainable_weights))
-    if USE_DISCRIMINATOR:
+        gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
+        optimizer.apply_gradients(zip(gradients, decoder.trainable_weights))
+        gradients = tape_encoder.gradient(loss_value, encoder.trainable_weights)
+        optimizer.apply_gradients(zip(gradients, encoder.trainable_weights))
         gradients_disc = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
         optimizer_disc.apply_gradients(zip(gradients_disc, discriminator.trainable_variables))
-    return loss_dict
+        return loss_dict
+
+    else:
+        with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder:
+            mean, logvar = encoder(batch)
+            latent = reparameterize(mean, logvar)
+            recons = decoder(latent)
+            loss_value, loss_dict = loss_fn(batch, recons, mean, logvar)
+
+        gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
+        optimizer.apply_gradients(zip(gradients, decoder.trainable_weights))
+        gradients = tape_encoder.gradient(loss_value, encoder.trainable_weights)
+        optimizer.apply_gradients(zip(gradients, encoder.trainable_weights))
+        return loss_dict
 
 
 def train():
@@ -205,6 +215,7 @@ parser.add_argument('--kld_loss_mul', default=0.0001, type=float,
                     help='Multiplier of KL divergence loss during training')
 parser.add_argument('--gen_loss_mul', default=1.0, type=float, help='Multiplier of adversarial loss during training')
 parser.add_argument('--use_discriminator', action='store_true', help='Use discriminator during training')
+parser.add_argument('--no_augmentation', action='store_true', help='Set this to turn augmentation off.')
 parser.add_argument('--restart_training', action='store_true',
                     help='If set, load a blank model and restart the training. If not set, reload the existing model and continue the training.')
 parser.add_argument('--save_only_at_end', action='store_true',
