@@ -9,8 +9,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--metadata_path", default="../../VGGface2_HQ/MAAD_Face.csv")
 parser.add_argument("--images_path", default="../../VGGface2_HQ/VGGface2_None_norm_512_true_bygfpgan")
 parser.add_argument("--out_path", default="../../VGGface2_HQ/dataset", help="Output path, folder will be created automatically.")
-parser.add_argument("--max_count", default=5000)
-parser.add_argument("--img_per_id", default=3)
+parser.add_argument("--max_count", default=5000, type=int)
+parser.add_argument("--img_per_id", default=3, type=int)
 args = parser.parse_args()
 
 
@@ -22,10 +22,20 @@ def check_row(row, filtered_rows):
             img_path_src = os.path.join(args.images_path, person_id, fname)
             new_fname = person_id + "_" + fname
             img_path_dst = os.path.join(args.out_path, "images", new_fname)
+            img = cv2.imread(img_path_src)
+            try:
+                cv2.imwrite(img_path_dst, img)
+            except Exception as e:
+                print(f"Couldn't write image: {img}")
+                print("It failed with the following exception:")
+                print(e)
+                print(f"fname was: {fname}")
+                print(f"person_id was: {person_id}")
+                print("If this happened it means that the image exists but is corrupt or it's a placeholder from a failed/partial decompression.")
+                return False
+
             row[0] = new_fname
             filtered_rows.append(row)
-            img = cv2.imread(img_path_src)
-            cv2.imwrite(img_path_dst, img)
             return True
     return False
 
