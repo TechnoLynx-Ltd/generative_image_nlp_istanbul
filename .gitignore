@@ -4,3 +4,6 @@
 *.hd5
 *.pyc
 *.png
+vae/data/
+vae/encoder.hd5/
+*.csv
