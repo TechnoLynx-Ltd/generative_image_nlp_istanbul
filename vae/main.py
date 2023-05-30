@@ -98,13 +98,16 @@ def train():
         for _ in tqdm(range(dataloader.num_batches)):
             images = dataloader.load_next_batch()
             loss_dict = train_for_one_batch(images)
-
-            gen_loss = loss_dict["gen_loss"].numpy()
-            disc_loss = loss_dict["disc_loss"].numpy()
+            if USE_DISCRIMINATOR:
+                gen_loss = loss_dict["gen_loss"].numpy()
+                disc_loss = loss_dict["disc_loss"].numpy()
             kld_loss = loss_dict["kld"].numpy()
             l1_loss = loss_dict["l1"].numpy()
             vgg_loss = loss_dict["vgg"].numpy()
-            print(f"gen_loss: {gen_loss}, disc_loss: {disc_loss}, l1: {l1_loss}, kld: {kld_loss}, vgg: {vgg_loss}")
+            if USE_DISCRIMINATOR:
+                print(f"gen_loss: {gen_loss}, disc_loss: {disc_loss}, l1: {l1_loss}, kld: {kld_loss}, vgg: {vgg_loss}")
+            else:
+                print(f"l1: {l1_loss}, kld: {kld_loss}, vgg: {vgg_loss}")
             print(gen_loss)
         mse.append(calc_metric(dataloader).numpy())
         log_test_image(os.path.join(args.image_log_path, f"{epoch}_test_img.jpg"))
