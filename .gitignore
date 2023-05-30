@@ -6,4 +6,5 @@
 *.png
 vae/data/
 vae/encoder.hd5/
-*.csv
+website/node_modules
+/vae/Metadata.csv
