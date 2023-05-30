@@ -1,10 +1,16 @@
 # Default ignored files
 /.idea
+vae/.idea
+vae/__pycache__/*
 /tmu_venv
 *.hd5
 *.pyc
 *.png
+node_modules/
 vae/data/
 vae/encoder.hd5/
 website/node_modules
+website/graph_model_js
+website/custom_tfjs
+website/dist
 /vae/Metadata.csv

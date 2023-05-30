@@ -1,0 +1,17 @@
+{
+    "kernels":
+    [
+        "Slice",
+        "FusedConv2D",
+        "fusedConv2d__op",
+        "Reshape",
+        "_FusedMatMul",
+        "fusedMatMul__op",
+        "Softmax",
+        "Identity"
+    ],
+    "backends": [ "cpu" ],
+    "models": [ "./graph_model_js/model.json" ],
+    "outputPath": "./custom_tfjs",
+    "forwardModeOnly": true
+}

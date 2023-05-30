@@ -7,17 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="TechnoLynx">
     <style></style>
-    <link rel="stylesheet" href="index.css">
-    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="index.js"></script>
-
 </head>
 
-<body onload="init()">
+<body onload="window.index.init()">
     <div class="container-fluid">
         <div class="row align-items-center">
             <div id="head" class="col-4 col-lg-2">
-                <img src="../resources/logo.png" class="img-fluid" alt="TechnoLynx logo">
+                <img id="logo_img" class="img-fluid" alt="TechnoLynx logo">
             </div>
             <div id="head" class="col-8 col-lg-4">
                 <h1>Faces Generation</h1>
@@ -161,7 +157,7 @@
                 </div>
             </div>
             <div id="gen_img" class="col-6 col-lg-3 align-items-right">
-                <img id="generated_image" src="../michael-2.png" class="img-fluid" alt="Generated image">
+                <img id="generated_image" class="img-fluid" alt="Generated image">
                 <div class="accordion" id="features_2">
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="Skin features">
