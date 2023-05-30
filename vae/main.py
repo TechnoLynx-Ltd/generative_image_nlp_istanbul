@@ -108,7 +108,6 @@ def train():
                 print(f"gen_loss: {gen_loss}, disc_loss: {disc_loss}, l1: {l1_loss}, kld: {kld_loss}, vgg: {vgg_loss}")
             else:
                 print(f"l1: {l1_loss}, kld: {kld_loss}, vgg: {vgg_loss}")
-            print(gen_loss)
         mse.append(calc_metric(dataloader).numpy())
         log_test_image(os.path.join(args.image_log_path, f"{epoch}_test_img.jpg"))
         if not SAVE_ONLY_AT_END:
