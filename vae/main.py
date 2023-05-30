@@ -123,13 +123,16 @@ def train():
         if not SAVE_ONLY_AT_END:
             encoder.save("encoder.hd5")
             decoder.save("decoder.hd5")
-        if USE_DISCRIMINATOR:
-            discriminator.save("discriminator.hd5")
+            if USE_DISCRIMINATOR:
+                discriminator.save("discriminator.hd5")
         print(f"MSE = {mse[-1]}")
 
     if SAVE_ONLY_AT_END:
         encoder.save("encoder.hd5")
         decoder.save("decoder.hd5")
+        if USE_DISCRIMINATOR:
+            discriminator.save("discriminator.hd5")
+            
     plt.plot(mse)
     plt.savefig('loss.png')
 
@@ -251,16 +254,18 @@ if args.restart_training:
     decoder = decoder_model(LATENT_DIM)
     decoder.compile(optimizer)
     decoder.summary()
+    if USE_DISCRIMINATOR:
+        discriminator = Discriminator.build_discriminator(IMAGE_SIZE)
+        discriminator.compile(optimizer_disc)
+        discriminator.summary()
 else:
     encoder = keras.models.load_model("encoder.hd5")
     encoder.summary()
     decoder = keras.models.load_model("decoder.hd5")
     decoder.summary()
-
-if USE_DISCRIMINATOR:
-    discriminator = Discriminator.build_discriminator(IMAGE_SIZE)
-    discriminator.compile(optimizer_disc)
-    discriminator.summary()
+    if USE_DISCRIMINATOR:
+        discriminator = keras.models.load_model("discriminator.hd5")
+        discriminator.summary()
 
 if args.train:
     train()
