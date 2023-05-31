@@ -52,22 +52,22 @@ def decoder_model(latent_dim):
     img = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(res)
     outputs.append(img)
 
-    res, img = decoder_block(res, 256, lv, 'bicubic', False)
+    res, img = decoder_block(res, 256, lv, 'bilinear', False)
     outputs.append(img)
 
-    res, img = decoder_block(res, 256, lv, 'bicubic', False)
+    res, img = decoder_block(res, 256, lv, 'bilinear', False)
     outputs.append(img)
 
-    res, img = decoder_block(res, 256, lv, 'bicubic', True)
+    res, img = decoder_block(res, 256, lv, 'bilinear', True)
     outputs.append(img)
 
-    res, img = decoder_block(res, 128, lv, 'bicubic', True)
+    res, img = decoder_block(res, 128, lv, 'bilinear', True)
     outputs.append(img)
 
-    res, img = decoder_block(res, 64, lv, 'bicubic', True)
+    res, img = decoder_block(res, 64, lv, 'bilinear', True)
     outputs.append(img)
 
-    res, img = decoder_block(res, 32, lv, 'bicubic', True)
+    res, img = decoder_block(res, 32, lv, 'bilinear', True)
     outputs.append(img)
 
     return Model(inputs=lv, outputs=outputs)
