@@ -34,26 +34,26 @@ class Discriminator:
         image = Input(shape=(image_size, image_size, 3))
 
         # Scale 1: 256x256
-        scale_1 = Conv2D(32, (4, 4), strides=(2, 2), padding='same')(image)
+        scale_1 = SpectralNormalization(Conv2D(32, (4, 4), strides=(2, 2),  kernel_initializer='he_normal', padding='same'))(image)
         scale_1 = LeakyReLU(alpha=0.2)(scale_1)
 
         # Scale 2: 128x128
-        scale_2 = Conv2D(64, (4, 4), strides=(2, 2), padding='same')(scale_1)
+        scale_2 = SpectralNormalization(Conv2D(64, (4, 4), strides=(2, 2), kernel_initializer='he_normal', padding='same'))(scale_1)
         scale_2 = InstanceNormalization()(scale_2)
         scale_2 = LeakyReLU(alpha=0.2)(scale_2)
 
         # Scale 3: 64x64
-        scale_3 = Conv2D(128, (4, 4), strides=(2, 2), padding='same')(scale_2)
+        scale_3 = SpectralNormalization(Conv2D(128, (4, 4), strides=(2, 2), kernel_initializer='he_normal', padding='same'))(scale_2)
         scale_3 = InstanceNormalization()(scale_3)
         scale_3 = LeakyReLU(alpha=0.2)(scale_3)
 
         # Scale 4: 32x32
-        scale_4 = Conv2D(256, (4, 4), strides=(2, 2), padding='same')(scale_3)
+        scale_4 = SpectralNormalization(Conv2D(256, (4, 4), strides=(2, 2), kernel_initializer='he_normal', padding='same'))(scale_3)
         scale_4 = InstanceNormalization()(scale_4)
         scale_4 = LeakyReLU(alpha=0.2)(scale_4)
 
         # Output layer
-        output = Conv2D(1, (4, 4), padding='same')(scale_4)
+        output = Conv2D(1, (4, 4), kernel_initializer='he_normal', padding='same')(scale_4)
 
         return Model(inputs=image, outputs=output)
 

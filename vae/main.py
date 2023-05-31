@@ -132,7 +132,7 @@ def train():
         decoder.save("decoder.hd5")
         if USE_DISCRIMINATOR:
             discriminator.save("discriminator.hd5")
-            
+
     plt.plot(mse)
     plt.savefig('loss.png')
 
@@ -239,7 +239,7 @@ USE_DISCRIMINATOR = args.use_discriminator
 SAVE_ONLY_AT_END = args.save_only_at_end
 
 optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
-optimizer_disc = keras.optimizers.Adam(learning_rate=LEARNING_RATE / 2)
+optimizer_disc = keras.optimizers.Adam(learning_rate=LEARNING_RATE / 4)
 metric = tf.keras.metrics.MeanSquaredError()
 
 vgg19 = VGG19(include_top=False, weights='imagenet', input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3))
