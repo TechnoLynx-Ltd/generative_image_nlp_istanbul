@@ -8,11 +8,11 @@ import tensorflow as tf
 def encoder_model(latent_dim):
     image = Input(shape=(256, 256, 3))
     x = SpectralNormalization(Conv2D(32, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(image)
-    x = LayerNormalization()(x)
+    x = BatchNormalization()(x)
     x = SpectralNormalization(Conv2D(64, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    x = LayerNormalization()(x)
+    x = BatchNormalization()(x)
     x = SpectralNormalization(Conv2D(128, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    x = LayerNormalization()(x)
+    x = BatchNormalization()(x)
     x = SpectralNormalization(Conv2D(256, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
     x = SpectralNormalization(Conv2D(256, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
     x = SpectralNormalization(Conv2D(256, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
@@ -28,11 +28,11 @@ def decoder_block(res, channels, lv, interpolation, norm):
     res = LeakyReLU(alpha=0.2)(res)
 
     if norm:
-        res = LayerNormalization(center=False, scale=False)(res)
+        res = BatchNormalization(center=False, scale=False)(res)
 
         common_dense = Dense(channels * 4, kernel_initializer='he_normal')(lv)
         common_dense = LeakyReLU(alpha=0.2)(common_dense)
-        common_dense = LayerNormalization()(common_dense)
+        common_dense = BatchNormalization()(common_dense)
         beta = Dense(channels, kernel_initializer='he_normal')(common_dense)
         beta = Reshape((1, 1, channels))(beta)
         gamma = Dense(channels, kernel_initializer='he_normal')(common_dense)
