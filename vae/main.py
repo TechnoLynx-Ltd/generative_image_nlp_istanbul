@@ -57,7 +57,7 @@ def calc_metric(dataloader):
     return metric.result()
 
 
-# @tf.function
+@tf.function
 def train_for_one_batch(batch):
     if USE_DISCRIMINATOR:
         with tf.GradientTape() as tape_encoder, tf.GradientTape() as tape_decoder, tf.GradientTape() as disc_tape:
@@ -75,7 +75,7 @@ def train_for_one_batch(batch):
             loss_dict["gen_loss"] = gen_loss
             disc_loss_mult = 1.0
             disc_loss *= disc_loss_mult
-            loss_value_scalar = 0.0
+            loss_value_scalar = 1.0
             loss_value = loss_value * loss_value_scalar + gen_loss * GEN_LOSS_MULTIPLIER
 
         gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
@@ -217,7 +217,7 @@ parser.add_argument('--vgg_loss_mul', default=1, type=float, help='Multiplier of
 parser.add_argument('--recon_loss_mul', default=1, type=float, help='Multiplier of reconstruction loss during training')
 parser.add_argument('--kld_loss_mul', default=0.0001, type=float,
                     help='Multiplier of KL divergence loss during training')
-parser.add_argument('--gen_loss_mul', default=1.0, type=float, help='Multiplier of adversarial loss during training')
+parser.add_argument('--gen_loss_mul', default=0.2, type=float, help='Multiplier of adversarial loss during training')
 parser.add_argument('--use_discriminator', action='store_true', help='Use discriminator during training')
 parser.add_argument('--use_aug', action='store_true', help='Set this to turn augmentation on.')
 parser.add_argument('--restart_training', action='store_true',
@@ -240,7 +240,9 @@ USE_DISCRIMINATOR = args.use_discriminator
 SAVE_ONLY_AT_END = args.save_only_at_end
 
 optimizer = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
-optimizer_disc = keras.optimizers.Adam(learning_rate=LEARNING_RATE / 4)
+optimizer_disc = keras.optimizers.Adam(learning_rate=LEARNING_RATE / 5)
+# optimizer_disc = keras.optimizers.Adam(learning_rate=LEARNING_RATE / 2)
+# optimizer_disc = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 metric = tf.keras.metrics.MeanSquaredError()
 
 vgg19 = VGG19(include_top=False, weights='imagenet', input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3))
