@@ -217,7 +217,7 @@ parser.add_argument('--vgg_loss_mul', default=1, type=float, help='Multiplier of
 parser.add_argument('--recon_loss_mul', default=1, type=float, help='Multiplier of reconstruction loss during training')
 parser.add_argument('--kld_loss_mul', default=0.0001, type=float,
                     help='Multiplier of KL divergence loss during training')
-parser.add_argument('--gen_loss_mul', default=0.1, type=float, help='Multiplier of adversarial loss during training')
+parser.add_argument('--gen_loss_mul', default=1.0, type=float, help='Multiplier of adversarial loss during training')
 parser.add_argument('--use_discriminator', action='store_true', help='Use discriminator during training')
 parser.add_argument('--use_aug', action='store_true', help='Set this to turn augmentation on.')
 parser.add_argument('--restart_training', action='store_true',
