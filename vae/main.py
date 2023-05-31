@@ -75,7 +75,8 @@ def train_for_one_batch(batch):
             loss_dict["gen_loss"] = gen_loss
             disc_loss_mult = 1.0
             disc_loss *= disc_loss_mult
-            loss_value = loss_value + gen_loss * GEN_LOSS_MULTIPLIER
+            loss_value_scalar = 0.0
+            loss_value = loss_value * loss_value_scalar + gen_loss * GEN_LOSS_MULTIPLIER
 
         gradients = tape_decoder.gradient(loss_value, decoder.trainable_weights)
         optimizer.apply_gradients(zip(gradients, decoder.trainable_weights))
