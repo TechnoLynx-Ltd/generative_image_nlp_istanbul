@@ -1,5 +1,5 @@
 from keras.layers import *
-from tensorflow_addons.layers import SpectralNormalization, InstanceNormalization
+from tensorflow_addons.layers import SpectralNormalization
 from keras import Model
 
 # ONLY FOR 256*256 IMAGES
@@ -8,11 +8,11 @@ from keras import Model
 def encoder_model(latent_dim):
     image = Input(shape=(256, 256, 3))
     x = SpectralNormalization(Conv2D(32, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(image)
-    x = InstanceNormalization()(x)
+    x = LayerNormalization()(x)
     x = SpectralNormalization(Conv2D(64, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    x = InstanceNormalization()(x)
+    x = LayerNormalization()(x)
     x = SpectralNormalization(Conv2D(128, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
-    x = InstanceNormalization()(x)
+    x = LayerNormalization()(x)
     x = SpectralNormalization(Conv2D(256, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
     x = SpectralNormalization(Conv2D(256, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
     x = SpectralNormalization(Conv2D(256, kernel_size=3, strides=2, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(x)
@@ -27,10 +27,10 @@ def decoder_block(res, channels, lv, interpolation, norm):
     res = SpectralNormalization(Conv2D(channels, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(res)
 
     if norm:
-        res = InstanceNormalization(center=False, scale=False)(res)
+        res = LayerNormalization(center=False, scale=False)(res)
 
         common_dense = SpectralNormalization(Dense(channels * 4, activation='leaky_relu', kernel_initializer='he_normal'))(lv)
-        common_dense = InstanceNormalization()(common_dense)
+        common_dense = LayerNormalization()(common_dense)
         beta = SpectralNormalization(Dense(channels, kernel_initializer='he_normal'))(common_dense)
         beta = Reshape((1, 1, channels))(beta)
         gamma = SpectralNormalization(Dense(channels, kernel_initializer='he_normal'))(common_dense)
@@ -52,22 +52,22 @@ def decoder_model(latent_dim):
     img = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(res)
     outputs.append(img)
 
-    res, img = decoder_block(res, 256, lv, 'nearest', False)
+    res, img = decoder_block(res, 256, lv, 'bilinear', False)
     outputs.append(img)
 
-    res, img = decoder_block(res, 256, lv, 'nearest', False)
+    res, img = decoder_block(res, 256, lv, 'bilinear', False)
     outputs.append(img)
 
-    res, img = decoder_block(res, 256, lv, 'nearest', True)
+    res, img = decoder_block(res, 256, lv, 'bilinear', True)
     outputs.append(img)
 
-    res, img = decoder_block(res, 128, lv, 'nearest', True)
+    res, img = decoder_block(res, 128, lv, 'bilinear', True)
     outputs.append(img)
 
-    res, img = decoder_block(res, 64, lv, 'bicubic', True)
+    res, img = decoder_block(res, 64, lv, 'bilinear', True)
     outputs.append(img)
 
-    res, img = decoder_block(res, 32, lv, 'bicubic', True)
+    res, img = decoder_block(res, 32, lv, 'bilinear', True)
     outputs.append(img)
 
     return Model(inputs=lv, outputs=outputs)
