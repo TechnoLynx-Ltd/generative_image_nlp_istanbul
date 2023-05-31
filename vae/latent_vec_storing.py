@@ -4,14 +4,6 @@ import csv
 import cv2
 import os
 
-def latent_interpolate(vec1, vec2, inter_steps=5):
-    inter_vectors = []
-    ratios = np.linspace(0 , 1, num=inter_steps)
-    for ratio in ratios:
-        vec = (1.0 - ratio) * vec1 + ratio * vec2
-        inter_vectors.append(vec)
-    return np.asarray(inter_vectors)
-
 IMAGE_SIZE = 256
 
 cols_names =[]
