@@ -24,15 +24,14 @@ def encoder_model(latent_dim):
 
 def decoder_block(res, channels, lv, interpolation, norm):
     res = UpSampling2D(2, interpolation=interpolation)(res)
-    tf.image.resize(res, (res.shape[1] * 2, res.shape[2] * 2), tf.image.ResizeMethod.BICUBIC)
     res = (Conv2D(channels, kernel_size=3, kernel_initializer='he_normal', padding='same'))(res)
-    res = LeakyReLU()(res)
+    res = LeakyReLU(alpha=0.2)(res)
 
     if norm:
         res = LayerNormalization(center=False, scale=False)(res)
 
         common_dense = Dense(channels * 4, kernel_initializer='he_normal')(lv)
-        common_dense = LeakyReLU()(common_dense)
+        common_dense = LeakyReLU(alpha=0.2)(common_dense)
         common_dense = LayerNormalization()(common_dense)
         beta = Dense(channels, kernel_initializer='he_normal')(common_dense)
         beta = Reshape((1, 1, channels))(beta)
@@ -49,10 +48,10 @@ def decoder_model(latent_dim):
 
     lv = Input(shape=latent_dim)
     res = Dense(4 * 4 * 256, kernel_initializer='he_normal')(lv)
-    res = LeakyReLU()(res)
+    res = LeakyReLU(alpha=0.2)(res)
     res = Reshape((4, 4, 256))(res)
     res = Conv2D(256, kernel_size=3, kernel_initializer='he_normal', padding='same')(res)
-    res = LeakyReLU()(res)
+    res = LeakyReLU(alpha=0.2)(res)
 
     img = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(res)
     outputs.append(img)
