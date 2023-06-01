@@ -12,9 +12,6 @@
 <body onload="window.index.init()">
     <div class="container-fluid">
         <div class="row align-items-center">
-            <div id="head" class="col-4 col-lg-2">
-                <img id="logo_img" class="img-fluid" alt="TechnoLynx logo">
-            </div>
             <div id="head" class="col-8 col-lg-4">
                 <h1>Faces Generation</h1>
             </div>
@@ -32,32 +29,22 @@
                 <div class="row align-items-center">
                     <button id="gen_bt_1" onclick="window.index.pic_gen_1()" class="btn btn-primary" type="button">Generate</button>
                 </div>
-                <div class="row align-items-center">
-                    <label for="ageRange_1" class="form-label" id="age_label_1">Age</label>
-                    <input type="range" class="form-range" min="0" max="10" step="1" id="ageRange_1" value="0">
-                </div>
-                <div class="accordion" id="features_2">
+                
+                <div class="accordion" id="features_1">
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="Facial_Elements_1">
                             <button class="accordion-button" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#panelsStayOpen-collapseFour_1" aria-expanded="true"
-                                aria-controls="panelsStayOpen-collapseFour">
+                                aria-controls="panelsStayOpen-collapseFour_1">
                                 Facial Elements
                             </button>
                         </h2>
                         <div id="panelsStayOpen-collapseFour_1" class="accordion-collapse collapse show"
-                            aria-labelledby="panelsStayOpen-headingFour">
-                            <p>Eyes</p>
+                            aria-labelledby="panelsStayOpen-collapseFour_1">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="Brown_Eyes_1">
                                 <label class="form-check-label" for="Brown_Eyes_1">
                                     Brown Eyes
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Bags_Under_Eyes_1">
-                                <label class="form-check-label" for="Bags_Under_Eyes_1">
-                                    Bags Under Eyes
                                 </label>
                             </div>
                             <div class="form-check">
@@ -67,139 +54,61 @@
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Arched_Eyebrows_1">
-                                <label class="form-check-label" for="Arched_Eyebrows_1">
-                                    Arched Eyebrows
-                                </label>
-                            </div>
-                            <p>Mouth</p>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Mouth_Closed_1">
-                                <label class="form-check-label" for="Mouth_Closed_1">
-                                    Closed Mouth
-                                </label>
-                            </div>
-                            <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="Smiling_1">
                                 <label class="form-check-label" for="Smiling_1">
                                     Smiling
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Big_Lips_1">
-                                <label class="form-check-label" for="Big_Lips_1">
-                                    Big Lips
-                                </label>
-                            </div>
-                            <p>Nose</p>
-                            <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="Big_Nose_1">
                                 <label class="form-check-label" for="Big_Nose_1">
-                                    Big_Nose
+                                    Big Nose
+                                </label>
+                            </div>
+
+                            <!-- Race -->
+                            <select id="race_1" class="form-select" aria-label="Default select example">
+                                <option value="0" selected>Race</option>
+                                <option value="1">Asian</option>
+                                <option value="2">White</option>
+                                <option value="3">Black</option>
+                            </select>
+
+                            <!-- Hair features -->
+                            <select id="hair_style_1" class="form-select" aria-label="Default select example">
+                                <option value="0" selected>Hair Style</option>
+                                <option value="1">bald</option>
+                                <option value="2">Wavy_Hair</option>
+                                <option value="3">Black_Hair</option>
+                            </select>
+                            <input class="form-check-input" type="checkbox" value="" id="No_Beard_1">
+                            <label class="form-check-label" for="No_Beard_1">
+                                No_Beard
+                            </label>
+
+                            <!-- Geometrical features -->
+                            <select id="face_shape_1" class="form-select" aria-label="Default select example">
+                                <option value="0" selected>Face shape</option>
+                                <option value="1">Oval</option>
+                                <option value="2">Square</option>
+                                <option value="3">Round</option>
+                            </select>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="High_Cheekbones_1">
+                                <label class="form-check-label" for="High_Cheekbones_1">
+                                    High Cheekbones
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="Fully_Visible_Forehead_1">
+                                <label class="form-check-label" for="Fully_Visible_Forehead_1">
+                                    Fully Visible Forehead
                                 </label>
                             </div>
                         </div>
                     </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="Skin_features_1">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#panelsStayOpen-collapseOne_1" aria-expanded="true"
-                                aria-controls="panelsStayOpen-collapseOne">
-                                Skin features
-                            </button>
-                        </h2>
-                        <div id="panelsStayOpen-collapseOne_1" class="accordion-collapse collapse show"
-                            aria-labelledby="panelsStayOpen-headingOne">
-                            <select id="race_1" class="form-select" aria-label="Default select example">
-                                <option value="0" selected>Race</option>
-                                <option value="1">White</option>
-                                <option value="2">Asian</option>
-                                <option value="3">Black</option>
-                            </select>
-                            <select id="refelction_1" class="form-select " aria-label="Default select example">
-                                <option value="0" selected>Reflection</option>
-                                <option value="1">Shiny skin</option>
-                                <option value="2">Rosy cheeks</option>
-                                <option value="3">Pale</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="Hair_features_1">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#panelsStayOpen-collapseTwo_1" aria-expanded="true"
-                                aria-controls="panelsStayOpen-collapseTwo">
-                                Hair features
-                            </button>
-                        </h2>
-                        <div id="panelsStayOpen-collapseTwo_1" class="accordion-collapse collapse show"
-                            aria-labelledby="panelsStayOpen-headingTwo">
-                            <select id="hair_style_1" class="form-select" aria-label="Default select example">
-                                <option value="0" selected>Style</option>
-                                <option value="1">Bald</option>
-                                <option value="2">Receding hairline</option>
-                                <option value="3">Wavy hair</option>
-                                <option value="4">Bangs</option>
-                            </select>
-                            <select id="facial_hair_1" class="form-select " aria-label="Default select example">
-                                <option value="0" selected>Facial hair</option>
-                                <option value="1">Beard</option>
-                                <option value="2">Mustache</option>
-                                <option value="3">5 o Clock Shadow</option>
-                                <option value="4">Goatee</option>
-                            </select>
-                            <select id="hair_color_1" class="form-select " aria-label="Default select example">
-                                <option value="0" selected>Color</option>
-                                <option value="1">Black</option>
-                                <option value="2">Blond</option>
-                                <option value="3">Brown</option>
-                                <option value="4">Gray</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                            <h2 class="accordion-header" id="Geometrical_features_1">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#panelsStayOpen-collapseThree_1" aria-expanded="true"
-                                    aria-controls="panelsStayOpen-collapseThree">
-                                    Geometrical features
-                                </button>
-                            </h2>
-                            <div id="panelsStayOpen-collapseThree_1" class="accordion-collapse collapse show"
-                                aria-labelledby="panelsStayOpen-headingThree">
-                                <select id="face_shape_1" class="form-select" aria-label="Default select example">
-                                    <option value="0" selected>Face shape</option>
-                                    <option value="1">Oval</option>
-                                    <option value="2">Square</option>
-                                    <option value="3">Round</option>
-                                </select>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="Double_Chin_1">
-                                    <label class="form-check-label" for="Double_Chin_1">
-                                        Double Chin
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="High_Cheekbones_1">
-                                    <label class="form-check-label" for="High_Cheekbones_1">
-                                        High Cheekbones
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="Chubby_1">
-                                    <label class="form-check-label" for="Chubby_1">
-                                        Chubby
-                                    </label>
-                                </div>
-                                <select id="forhead_1" class="form-select" aria-label="Default select example">
-                                    <option value="0" selected>Forehead type</option>
-                                    <option value="1">Obstructed Forehead</option>
-                                    <option value="2">Fully Visible Forehead</option>
-                                </select>
-                            </div>
-                        </div>
                 </div>
-            </div> 
+            </div>
 
             <!--
                 IMAGE 2
@@ -209,34 +118,22 @@
                 <div class="row align-items-center">
                     <button id="gen_bt_2" onclick="window.index.pic_gen_2()" class="btn btn-primary" type="button">Generate</button>
                 </div>
-
-                <div class="row align-items-center">
-                    <label for="ageRange_2" class="form-label" id="age_label_2">Age</label>
-                    <input type="range" class="form-range" min="0" max="10" step="1" id="ageRange_2" value="0">
-                </div>
-
+                
                 <div class="accordion" id="features_2">
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="Facial_Elements_2">
                             <button class="accordion-button" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#panelsStayOpen-collapseFour_2" aria-expanded="true"
-                                aria-controls="panelsStayOpen-collapseFour">
+                                aria-controls="panelsStayOpen-collapseFour_2">
                                 Facial Elements
                             </button>
                         </h2>
                         <div id="panelsStayOpen-collapseFour_2" class="accordion-collapse collapse show"
-                            aria-labelledby="panelsStayOpen-headingFour">
-                            <p>Eyes</p>
+                            aria-labelledby="panelsStayOpen-collapseFour_2">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="Brown_Eyes_2">
                                 <label class="form-check-label" for="Brown_Eyes_2">
                                     Brown Eyes
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Bags_Under_Eyes_2">
-                                <label class="form-check-label" for="Bags_Under_Eyes_2">
-                                    Bags Under Eyes
                                 </label>
                             </div>
                             <div class="form-check">
@@ -246,151 +143,75 @@
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Arched_Eyebrows_2">
-                                <label class="form-check-label" for="Arched_Eyebrows_2">
-                                    Arched Eyebrows
-                                </label>
-                            </div>
-                            <p>Mouth</p>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Mouth_Closed_2">
-                                <label class="form-check-label" for="Mouth_Closed_2">
-                                    Closed Mouth
-                                </label>
-                            </div>
-                            <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="Smiling_2">
                                 <label class="form-check-label" for="Smiling_2">
                                     Smiling
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Big_Lips_2">
-                                <label class="form-check-label" for="Big_Lips_2">
-                                    Big Lips
-                                </label>
-                            </div>
-                            <p>Nose</p>
-                            <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="Big_Nose_2">
                                 <label class="form-check-label" for="Big_Nose_2">
-                                    Big_Nose
+                                    Big Nose
+                                </label>
+                            </div>
+
+                            <!-- Race -->
+                            <select id="race_2" class="form-select" aria-label="Default select example">
+                                <option value="0" selected>Race</option>
+                                <option value="1">Asian</option>
+                                <option value="2">White</option>
+                                <option value="3">Black</option>
+                            </select>
+
+                            <!-- Hair features -->
+                            <select id="hair_style_2" class="form-select" aria-label="Default select example">
+                                <option value="0" selected>Hair Style</option>
+                                <option value="1">bald</option>
+                                <option value="2">Wavy_Hair</option>
+                                <option value="3">Black_Hair</option>
+
+                            </select>
+                            <input class="form-check-input" type="checkbox" value="" id="No_Beard_2">
+                            <label class="form-check-label" for="No_Beard_2">
+                                No_Beard
+                            </label>
+
+                            <!-- Geometrical features -->
+                            <select id="face_shape_2" class="form-select" aria-label="Default select example">
+                                <option value="0" selected>Face shape</option>
+                                <option value="1">Oval</option>
+                                <option value="2">Square</option>
+                                <option value="3">Round</option>
+                            </select>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="High_Cheekbones_2">
+                                <label class="form-check-label" for="High_Cheekbones_2">
+                                    High Cheekbones
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="Fully_Visible_Forehead_2">
+                                <label class="form-check-label" for="Fully_Visible_Forehead_2">
+                                    Fully Visible Forehead
                                 </label>
                             </div>
                         </div>
                     </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="Skin_features_2">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#panelsStayOpen-collapseOne_2" aria-expanded="true"
-                                aria-controls="panelsStayOpen-collapseOne">
-                                Skin features
-                            </button>
-                        </h2>
-                        <div id="panelsStayOpen-collapseOne_2" class="accordion-collapse collapse show"
-                            aria-labelledby="panelsStayOpen-headingOne">
-                            <select id="race_2" class="form-select" aria-label="Default select example">
-                                <option value="0" selected>Race</option>
-                                <option value="1">White</option>
-                                <option value="2">Asian</option>
-                                <option value="3">Black</option>
-                            </select>
-                            <select id="refelction_2" class="form-select " aria-label="Default select example">
-                                <option value="0" selected>Reflection</option>
-                                <option value="1">Shiny skin</option>
-                                <option value="2">Rosy cheeks</option>
-                                <option value="3">Pale</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="Hair_features_2">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#panelsStayOpen-collapseTwo_2" aria-expanded="true"
-                                aria-controls="panelsStayOpen-collapseTwo">
-                                Hair features
-                            </button>
-                        </h2>
-                        <div id="panelsStayOpen-collapseTwo_2" class="accordion-collapse collapse show"
-                            aria-labelledby="panelsStayOpen-headingTwo">
-                            <select id="hair_style_2" class="form-select" aria-label="Default select example">
-                                <option value="0" selected>Style</option>
-                                <option value="1">Bald</option>
-                                <option value="2">Receding hairline</option>
-                                <option value="3">Wavy hair</option>
-                                <option value="4">Bangs</option>
-                            </select>
-                            <select id="facial_hair_2" class="form-select " aria-label="Default select example">
-                                <option value="0" selected>Facial hair</option>
-                                <option value="1">Beard</option>
-                                <option value="2">Mustache</option>
-                                <option value="3">5 o Clock Shadow</option>
-                                <option value="4">Goatee</option>
-                            </select>
-                            <select id="hair_color_2" class="form-select " aria-label="Default select example">
-                                <option value="0" selected>Color</option>
-                                <option value="1">Black</option>
-                                <option value="2">Blond</option>
-                                <option value="3">Brown</option>
-                                <option value="4">Gray</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                            <h2 class="accordion-header" id="Geometrical_features_2">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#panelsStayOpen-collapseThree_2" aria-expanded="true"
-                                    aria-controls="panelsStayOpen-collapseThree">
-                                    Geometrical features
-                                </button>
-                            </h2>
-                            <div id="panelsStayOpen-collapseThree_2" class="accordion-collapse collapse show"
-                                aria-labelledby="panelsStayOpen-headingThree">
-                                <select id="face_shape_2" class="form-select" aria-label="Default select example">
-                                    <option value="0" selected>Face shape</option>
-                                    <option value="1">Oval</option>
-                                    <option value="2">Square</option>
-                                    <option value="3">Round</option>
-                                </select>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="Double_Chin_2">
-                                    <label class="form-check-label" for="Double_Chin_2">
-                                        Double Chin
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="High_Cheekbones_2">
-                                    <label class="form-check-label" for="High_Cheekbones_2">
-                                        High Cheekbones
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="Chubby_2">
-                                    <label class="form-check-label" for="Chubby_2">
-                                        Chubby
-                                    </label>
-                                </div>
-                                <select id="forhead_2" class="form-select" aria-label="Default select example">
-                                    <option value="0" selected>Forehead type</option>
-                                    <option value="1">Obstructed Forehead</option>
-                                    <option value="2">Fully Visible Forehead</option>
-                                </select>
-
-                            </div>
-                        </div>
                 </div>
-            </div> 
+            </div>
 
             <!--
                 INTERPOLATED IMAGE
             -->
-            <div id="interpolated_img" class="col-6 col-lg-3 align-items-top">
+            <div id="interpolated_img" class="col-6 align-items-top">
                 <canvas id="interpolated_image" width="256" height="256" class="img-fluid" alt="Generated image"></canvas>
                 <div class="row align-items-center">
                     <label for="interpolate" class="form-label">Interpolate</label>
                     <input type="range" class="form-range" min="0" max="10" step="1" id="interpolate" value="0">
                     <button id="gen_bt" onclick="window.index.pic_gen_interpolate()" class="btn btn-primary" type="button">Generate</button>
-                    <div class="w-100 p-3" style="background-color: #eee;"></div>
+                    <div class="col flex-fill">
+                        <div class="h-100" style="background-color: #eee;"></div>
+                    </div>
                 </div>
             </div>
 

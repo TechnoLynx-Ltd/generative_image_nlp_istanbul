@@ -15,19 +15,13 @@ import logo_img from "../resources/logo.png";
 
 const LATENT_DIM = 256;
 const OUTPUT_IDX = 6;
-
-var latent_vec_1 = null
-var latent_vec_2 = null
-
-let model = null;
+const MAX_INTERPOL = 10;
 
 // Global variables
-var age = null
-var race = null
-var hair_color = null
-var face_shape = null
-var brown_eyes = null
-var empty_image = null
+var latent_vec_1 = null
+var latent_vec_2 = null
+let model = null;
+var empty_image = null;
 
 function unspacify(text)
 {
@@ -73,9 +67,15 @@ export function init()
     init_latent_dict();
 
     // load AI model
-    load_model()
+    // tf.setBackend('gpu');
+    console.log("TensorFlow Backend:", tf.getBackend());
+    try {
+        load_model()
+    } catch (e) {
+        console.log("Model load exception:", e);
+    }
 
-    document.getElementById("logo_img").src = logo_img
+    // document.getElementById("logo_img").src = logo_img
 
     empty_image = new Image(256, 256);
     empty_image.src = empty_img;
@@ -84,14 +84,6 @@ export function init()
         set_canvas_image("generated_image_2", empty_image);
         set_canvas_image("interpolated_image", empty_image);
     }
-    document.getElementById("ageRange_1").value = 0;
-    document.getElementById("ageRange_2").value = 0;
-
-    age = document.getElementById("ageRange_1").value;
-    race = document.getElementById("race_1").value;
-    hair_color = document.getElementById("hair_color_1").value;
-    face_shape = document.getElementById("face_shape_1").value;
-    brown_eyes = document.getElementById("Brown_Eyes_1").value;
 }
 
 // Generate image based on the latent vector in @input
@@ -101,33 +93,51 @@ export function load_img(input, canvas_id)
     // Expand current position to 4D b/c model input requirement
     //  console.log("Array: ", input);
     const input_tensor = tf.expandDims(tf.tensor(input), 0);
-    //  console.log("Tensor: ", input_tensor);
+    // input_tensor.print();
+    // console.log("Tensor: ", input_tensor);
+    // console.log("Tensor: ", input_tensor.dataSync());
 
     // Model predicts score (shape:(1,2)) of current position
-    const scores = model.predict(input_tensor)[OUTPUT_IDX];//.arraySync();
-    console.log("scores.shape: ", scores.shape);
+    const result = model.predict(input_tensor);
+    // console.log("result: ", result);
+    //  result[0].print()
+    //  result[1].print()
+    //  result[2].print()
+    //  result[3].print()
+    //  result[4].print()
+    //  result[5].print()
+    //  result[6].print()
+    // result[OUTPUT_IDX].print()
+    const scores = result[OUTPUT_IDX];//.arraySync();
+    console.log("scores[", OUTPUT_IDX, "].shape: ", scores.shape);
 
     var canvas = document.getElementById(canvas_id);
     var ctx = canvas.getContext("2d");
     var image = ctx.createImageData(1, 1); // pixel image
     const gen_data = scores.dataSync();
+    //  console.log("gen_data: ", gen_data);
     for (let y=0; y<scores.shape[1]; y++) {
         for (let x=0; x<scores.shape[2]; x++) {
-            const r = gen_data[y*scores.shape[2] + x*3 + 0];
-            const g = gen_data[y*scores.shape[2] + x*3 + 0];
-            const b = gen_data[y*scores.shape[2] + x*3 + 0];
+            let b = gen_data[(y*scores.shape[2] + x)*3 + 0];
+            let g = gen_data[(y*scores.shape[2] + x)*3 + 1];
+            let r = gen_data[(y*scores.shape[2] + x)*3 + 2];
             // console.log("X:", x, " Y:", y, " R:", r, " G:", g, " B:", b);
-            image.data[0] = tf.isNaN(r) ? Math.random() * 250 : r + 100;    // Red
-            image.data[1] = tf.isNaN(g) ? Math.random() * 250 : g + 100;    // Green
-            image.data[2] = tf.isNaN(b) ? Math.random() * 250 : b + 100;    // Blue
-            image.data[3] = 255;                                            // Alpha
-
+            if (isNaN(r) || isNaN(g) || isNaN(b)) {
+                image.data[0] = (x+2*y) % 256;    // Red
+                image.data[1] = (x+3*y) % 256;    // Green
+                image.data[2] = (x+5*y) % 256;    // Blue
+            } else {
+                image.data[0] = Math.max(0, Math.min(255, (r + 1)*127));    // Red
+                image.data[1] = Math.max(0, Math.min(255, (g + 1)*127));    // Green
+                image.data[2] = Math.max(0, Math.min(255, (b + 1)*127));    // Blue
+            }
+            image.data[3] = 255;                                // Alpha
             ctx.putImageData(image, x, y);
         }
     }
 
     //  console.log("scores: ", scores);
-    //  console.log("scores array: ", Array.from(scores.dataSync()));
+    // console.log("scores array: ", Array.from(scores.dataSync()));
     // scores.print();
 }
 
@@ -135,8 +145,8 @@ export function load_img(input, canvas_id)
 //
 function get_latent_vector(img_idx)
 {
-    let html_selects = ["race", "hair_style", "facial_hair", "hair_color", "face_shape", "forhead"];
-    let html_checkboxes = ["Double_Chin", "High_Cheekbones", "Chubby", "Brown_Eyes", "Bags_Under_Eyes", "Bushy_Eyebrows", "Arched_Eyebrows", "Mouth_Closed", "Smiling", "Big_Lips", "Big_Nose"];
+    let html_selects = ["race", "hair_style", "face_shape"];
+    let html_checkboxes = ["Brown_Eyes", "Bushy_Eyebrows", "Smiling", "Big_Nose", "No_Beard", "High_Cheekbones", "Fully_Visible_Forehead"];
 
     let latent_selector = new Array(idx_latent_vector).fill(0);
     let filter_keys = new Array(idx_latent_vector).fill("");
@@ -200,7 +210,7 @@ function get_latent_vector(img_idx)
 
         // We have at least one matching row so we can delete the others
         for (let idx of valid_idxs) {
-            if (latent_dict[idx][i] == 0) {
+            if (latent_dict[idx][i] != 1) {
                 valid_idxs.delete(idx);
             }
         }
@@ -208,9 +218,12 @@ function get_latent_vector(img_idx)
 
     // return a random index from the indexes matching filter
     let rv = Array.from(valid_idxs);
-    console.log("Latent vectors matching filter: ", rv.length);
     let rnd_idx = Math.floor(Math.random() * rv.length);
-    console.log("Latent vector[", rnd_idx, "]: ", latent_dict[rv[rnd_idx]][idx_latent_vector]);
+    console.log("latent_selector:", latent_selector);
+    console.log("filter_keys:", filter_keys);
+    console.log("selected_latent:", latent_dict[rv[rnd_idx]].slice(0, idx_latent_vector-1));
+    console.log("Latent vectors matching filter: ", rv.length, " / ", rnd_idx, ' => LatentIdx: ', rv[rnd_idx]);
+    //  console.log("Latent vector[", rnd_idx, "]: ", latent_dict[rv[rnd_idx]][idx_latent_vector]);
     return latent_dict[rv[rnd_idx]][idx_latent_vector];
 }
 
@@ -227,6 +240,7 @@ export function pic_gen_1()
     load_img(input, "generated_image_1");
 
 }
+
 export function pic_gen_2()
 {
     console.log("pic_gen_2");
@@ -237,16 +251,28 @@ export function pic_gen_2()
     latent_vec_2 = input;
     load_img(input, "generated_image_2");
 }
+
 export function pic_gen_interpolate()
 {
     console.log("pic_gen_interpolate");
+    if ((latent_vec_1 == null) || (latent_vec_2 == null))
+    {
+        alert("Please generate the two input images first!");
+        return;
+    }
 
-    // randomly generated N = 40 length array 0 <= A[N] <= 39
-    let input = Array.from({length: LATENT_DIM}, () => Math.random());
+    let elem = document.getElementById("interpolate");
+    console.log("Interpolation weight: ", parseInt(elem.value));
+    let weight = 1.0 / (1+parseInt(elem.value));
+    if (parseInt(elem.value) == MAX_INTERPOL) {
+        // use second image only
+        weight = 0;
+    }
+
+    // Interpolate the two latent vectors
+    let input = new Array(LATENT_DIM).fill(0.0);
+    for (let i=0; i<latent_vec_1.length; i++) {
+        input[i] = weight * latent_vec_1[i] + (1 - weight) * latent_vec_2[i];
+    }
     load_img(input, "interpolated_image");
-}
-
-export function interpolate_latents()
-{
-
 }
