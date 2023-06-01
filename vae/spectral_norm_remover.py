@@ -1,8 +1,8 @@
+import keras.models
 from keras.layers import *
-from tensorflow_addons.layers import SpectralNormalization
 from keras import Model
-
-# ONLY FOR 256*256 IMAGES
+from tensorflow_addons.layers import SpectralNormalization
+import tensorflow as tf
 
 
 def encoder_model(latent_dim):
@@ -24,16 +24,18 @@ def encoder_model(latent_dim):
 
 def decoder_block(res, channels, lv, interpolation, norm):
     res = UpSampling2D(2, interpolation=interpolation)(res)
-    res = SpectralNormalization(Conv2D(channels, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(res)
+    res = (Conv2D(channels, kernel_size=3, kernel_initializer='he_normal', padding='same'))(res)
+    res = LeakyReLU(alpha=0.2)(res)
 
     if norm:
         res = BatchNormalization(center=False, scale=False)(res)
 
-        common_dense = SpectralNormalization(Dense(channels * 4, activation='leaky_relu', kernel_initializer='he_normal'))(lv)
+        common_dense = Dense(channels * 4, kernel_initializer='he_normal')(lv)
+        common_dense = LeakyReLU(alpha=0.2)(common_dense)
         common_dense = BatchNormalization()(common_dense)
-        beta = SpectralNormalization(Dense(channels, kernel_initializer='he_normal'))(common_dense)
+        beta = Dense(channels, kernel_initializer='he_normal')(common_dense)
         beta = Reshape((1, 1, channels))(beta)
-        gamma = SpectralNormalization(Dense(channels, kernel_initializer='he_normal'))(common_dense)
+        gamma = Dense(channels, kernel_initializer='he_normal')(common_dense)
         gamma = Reshape((1, 1, channels))(gamma)
         res = res * (1 + gamma) + beta
 
@@ -45,9 +47,11 @@ def decoder_model(latent_dim):
     outputs = []
 
     lv = Input(shape=latent_dim)
-    res = SpectralNormalization(Dense(4 * 4 * 256, activation='leaky_relu', kernel_initializer='he_normal'))(lv)
+    res = Dense(4 * 4 * 256, kernel_initializer='he_normal')(lv)
+    res = LeakyReLU(alpha=0.2)(res)
     res = Reshape((4, 4, 256))(res)
-    res = SpectralNormalization(Conv2D(256, kernel_size=3, activation='leaky_relu', kernel_initializer='he_normal', padding='same'))(res)
+    res = Conv2D(256, kernel_size=3, kernel_initializer='he_normal', padding='same')(res)
+    res = LeakyReLU(alpha=0.2)(res)
 
     img = Conv2D(3, kernel_size=1, kernel_initializer='he_normal')(res)
     outputs.append(img)
@@ -71,3 +75,20 @@ def decoder_model(latent_dim):
     outputs.append(img)
 
     return Model(inputs=lv, outputs=outputs)
+
+
+model = keras.models.load_model("decoder.hd5")
+model.summary()
+
+encoder = encoder_model(256)
+model2 = decoder_model(256)
+for i in range(len(model.layers)):
+    if not model.layers[i].get_weights():
+        continue
+    if model.layers[i].__class__.__name__ == 'SpectralNormalization':
+        layer = model.layers[i].layer
+    else:
+        layer = model.layers[i]
+    model2.get_layer(layer.name).set_weights(layer.get_weights())
+model2.summary()
+keras.models.save_model(model2, "no_spectral.h5", save_format="h5")
