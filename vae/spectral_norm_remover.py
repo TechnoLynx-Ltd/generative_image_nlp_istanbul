@@ -91,4 +91,4 @@ for i in range(len(model.layers)):
         layer = model.layers[i]
     model2.get_layer(layer.name).set_weights(layer.get_weights())
 model2.summary()
-model2.save("no_spectral_model")
+keras.models.save_model(model2, "no_spectral.h5", save_format="h5")

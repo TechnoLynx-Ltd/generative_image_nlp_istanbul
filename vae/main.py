@@ -36,8 +36,12 @@ def loss_fn(x, recons, mean, logvar):
     loss_dict["kld"] = kld_loss
 
     vgg_loss = 0
-    vgg_x = vgg19(x)
-    vgg_recon = vgg19(recons[-1])
+    vgg_input_x = (x[..., ::-1] + 1) * 128
+    tf.keras.applications.vgg19.preprocess_input(vgg_input_x)
+    vgg_x = vgg19(vgg_input_x)
+    vgg_input_recon = (recons[-1][..., ::-1] + 1) * 128
+    tf.keras.applications.vgg19.preprocess_input(vgg_input_recon)
+    vgg_recon = vgg19(vgg_input_recon)
     for i in range(len(vgg_x)):
         vgg_loss += l1_loss(vgg_x[i], vgg_recon[i])
     vgg_loss /= len(vgg_x)
@@ -209,9 +213,9 @@ parser.add_argument('--calc_metric_num_batches', default=100, type=int,
                     help='Number of batches to evaluate metrics on after each epoch')
 parser.add_argument('--learning_rate', default=0.0001, type=float, help='Learning rate for training')
 parser.add_argument('--epochs', default=100, type=int, help='Number of epochs to train for')
-parser.add_argument('--vgg_loss_mul', default=1, type=float, help='Multiplier of VGG loss during training')
+parser.add_argument('--vgg_loss_mul', default=0.002, type=float, help='Multiplier of VGG loss during training')
 parser.add_argument('--recon_loss_mul', default=1, type=float, help='Multiplier of reconstruction loss during training')
-parser.add_argument('--kld_loss_mul', default=0.0001, type=float,
+parser.add_argument('--kld_loss_mul', default=0.000001, type=float,
                     help='Multiplier of KL divergence loss during training')
 parser.add_argument('--gen_loss_mul', default=1.0, type=float, help='Multiplier of adversarial loss during training')
 parser.add_argument('--use_discriminator', action='store_true', help='Use discriminator during training')
