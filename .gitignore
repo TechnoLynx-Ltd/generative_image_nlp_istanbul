@@ -5,13 +5,14 @@ vae/__pycache__
 /tmu_venv
 *.hd5
 *.pyc
+*.png
 node_modules/
 vae/data/
 vae/encoder.hd5/
 saved_model/
 website/node_modules
 website/graph_model_js
-# website/custom_tfjs
+website/custom_tfjs
 website/dist
 website/src/latent_dictionary.js
 /vae/Metadata.csv
