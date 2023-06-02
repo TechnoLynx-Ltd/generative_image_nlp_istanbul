@@ -5,7 +5,6 @@ vae/__pycache__
 /tmu_venv
 *.hd5
 *.pyc
-*.png
 node_modules/
 vae/data/
 vae/encoder.hd5/
