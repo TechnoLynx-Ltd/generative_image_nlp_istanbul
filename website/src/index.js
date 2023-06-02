@@ -263,16 +263,12 @@ export function pic_gen_interpolate()
 
     let elem = document.getElementById("interpolate");
     console.log("Interpolation weight: ", parseInt(elem.value));
-    let weight = 1.0 / (1+parseInt(elem.value));
-    if (parseInt(elem.value) == MAX_INTERPOL) {
-        // use second image only
-        weight = 0;
-    }
+    let weight = parseInt(elem.value) / MAX_INTERPOL;
 
     // Interpolate the two latent vectors
     let input = new Array(LATENT_DIM).fill(0.0);
     for (let i=0; i<latent_vec_1.length; i++) {
-        input[i] = weight * latent_vec_1[i] + (1 - weight) * latent_vec_2[i];
+        input[i] = (1 - weight) * latent_vec_1[i] + weight * latent_vec_2[i];
     }
     load_img(input, "interpolated_image");
 }
