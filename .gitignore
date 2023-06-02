@@ -16,3 +16,4 @@ website/custom_tfjs
 website/dist
 website/src/latent_dictionary.js
 /vae/Metadata.csv
+/vae/data30k
