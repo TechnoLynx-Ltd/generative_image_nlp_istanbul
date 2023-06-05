@@ -1,7 +1,7 @@
 import "./index.css"
 
 import * as tf from "@tensorflow/tfjs";
-import "@tensorflow/tfjs-backend-cpu";
+import "@tensorflow/tfjs-backend-webgl";
 
 import model_config_json from "../graph_model_js/model.json";
 import model_weights from "../graph_model_js/group1-shard1of1.bin";
@@ -60,11 +60,11 @@ function set_canvas_image(canvas_id, img)
     // var img = canvas.toDataURL("image/png");
 }
 
-export function init()
+export async function init()
 {
     console.log("init() - called");
 
-    init_latent_dict();
+    await init_latent_dict();
 
     // load AI model
     // tf.setBackend('gpu');
@@ -74,6 +74,9 @@ export function init()
     } catch (e) {
         console.log("Model load exception:", e);
     }
+
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("myDiv").style.display = "block";
 
     // document.getElementById("logo_img").src = logo_img
 
@@ -88,7 +91,7 @@ export function init()
 
 // Generate image based on the latent vector in @input
 //
-export function load_img(input, canvas_id)
+export async function load_img(input, canvas_id)
 {
     // Expand current position to 4D b/c model input requirement
     //  console.log("Array: ", input);
@@ -229,7 +232,7 @@ function get_latent_vector(img_idx)
 
 // Handler functions for image generation
 //
-export function pic_gen_1()
+export async function pic_gen_1()
 {
     console.log("pic_gen_1");
 
@@ -237,11 +240,10 @@ export function pic_gen_1()
     // let input = Array.from({length: LATENT_DIM}, () => Math.random());
     let input = get_latent_vector("_1");
     latent_vec_1 = input;
-    load_img(input, "generated_image_1");
-
+    await load_img(input, "generated_image_1");
 }
 
-export function pic_gen_2()
+export async function pic_gen_2()
 {
     console.log("pic_gen_2");
 
@@ -249,10 +251,10 @@ export function pic_gen_2()
     // let input = Array.from({length: LATENT_DIM}, () => Math.random());
     let input = get_latent_vector("_2");
     latent_vec_2 = input;
-    load_img(input, "generated_image_2");
+    await load_img(input, "generated_image_2");
 }
 
-export function pic_gen_interpolate()
+export async function pic_gen_interpolate()
 {
     console.log("pic_gen_interpolate");
     if ((latent_vec_1 == null) || (latent_vec_2 == null))
@@ -270,5 +272,5 @@ export function pic_gen_interpolate()
     for (let i=0; i<latent_vec_1.length; i++) {
         input[i] = (1 - weight) * latent_vec_1[i] + weight * latent_vec_2[i];
     }
-    load_img(input, "interpolated_image");
+    await load_img(input, "interpolated_image");
 }
