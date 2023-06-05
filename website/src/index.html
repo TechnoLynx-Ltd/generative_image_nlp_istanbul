@@ -62,23 +62,23 @@
 <body onload="window.index.init()">
     <div id="loader"></div>
     <div class="container-fluid" id="myDiv">
-        <div class="row align-items-center">
-            <div id="head" class="col-8 col-lg-4">
-                <h1>Faces Generation</h1>
+        <div class="row align-items-left">
+            <div id="head" class="col-12">
+                <h1 align="left">Faces Generation</h1>
             </div>
         </div>
         <div class="row align-items-center">
             <h2>Instructions</h2>
             <p>Please select an attribute from each category</p>
 
-        <div class="row align-items-center">
+        <div class="row">
             <!--
                 IMAGE 1
             -->
-            <div id="gen_img_1" class="col-6 col-lg-3 align-items-right">
+            <div id="gen_img_1" class="col-12 col-md-4 mb-3">
                 <canvas id="generated_image_1" width="256" height="256" class="img-fluid" alt="Generated image"></canvas>
-                <div class="row align-items-center">
-                    <button id="gen_bt_1" onclick="window.index.pic_gen_1()" class="btn btn-primary" type="button">Generate</button>
+                <div class="align-items-center">
+                    <button id="gen_bt_1" onclick="window.index.pic_gen_1()" class="btn btn-primary w-100" type="button">Generate</button>
                 </div>
                 
                 <div class="accordion" id="features_1">
@@ -164,10 +164,10 @@
             <!--
                 IMAGE 2
             -->
-            <div id="gen_img_2" class="col-6 col-lg-3 align-items-right">
+            <div id="gen_img_2" class="col-12 col-md-4 mb-3">
                 <canvas id="generated_image_2" width="256" height="256" class="img-fluid" alt="Generated image"></canvas>
-                <div class="row align-items-center">
-                    <button id="gen_bt_2" onclick="window.index.pic_gen_2()" class="btn btn-primary" type="button">Generate</button>
+                <div class="align-items-center">
+                    <button id="gen_bt_2" onclick="window.index.pic_gen_2()" class="btn btn-primary w-100" type="button">Generate</button>
                 </div>
                 
                 <div class="accordion" id="features_2">
@@ -254,12 +254,12 @@
             <!--
                 INTERPOLATED IMAGE
             -->
-            <div id="interpolated_img" class="col-6 align-items-top">
+            <div id="interpolated_img" class="col-12 col-md-4 mb-3">
                 <canvas id="interpolated_image" width="256" height="256" class="img-fluid" alt="Generated image"></canvas>
-                <div class="row align-items-center">
+                <div class="align-items-center">
                     <label for="interpolate" class="form-label">Interpolate</label>
                     <input type="range" class="form-range" min="0" max="10" step="1" id="interpolate" value="0">
-                    <button id="gen_bt" onclick="window.index.pic_gen_interpolate()" class="btn btn-primary" type="button">Generate</button>
+                    <button id="gen_bt" onclick="window.index.pic_gen_interpolate()" class="btn btn-primary w-100" type="button">Generate</button>
                     <div class="col flex-fill">
                         <div class="h-100" style="background-color: #eee;"></div>
                     </div>
