@@ -62,28 +62,22 @@
 <body onload="window.index.init()">
     <div id="loader"></div>
     <div class="container-fluid" id="myDiv">
-        <div class="row align-items-left">
-            <div id="head" class="col-12">
-                <h1 align="left">Faces Generation</h1>
+        <div class="row align-items-center">
+            <div id="head" class="col-12 mb-4">
+                <h2 align="center">Face Mixing</h2>
             </div>
         </div>
-        <div class="row align-items-center">
-            <h2>Instructions</h2>
-            <p>Please select an attribute from each category</p>
-
-        <div class="row">
+        <div class="row align-items-top">
             <!--
                 IMAGE 1
             -->
             <div id="gen_img_1" class="col-12 col-md-4 mb-3">
+                <h3 align="center" class="mb-3">Face A</h3>
                 <canvas id="generated_image_1" width="256" height="256" class="img-fluid" alt="Generated image"></canvas>
-                <div class="align-items-center">
-                    <button id="gen_bt_1" onclick="window.index.pic_gen_1()" class="btn btn-primary w-100" type="button">Generate</button>
-                </div>
                 
                 <div class="accordion" id="features_1">
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="Facial_Elements_1">
+                        <h2 class="accordion-header mb-2" id="Facial_Elements_1">
                             <button class="accordion-button" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#panelsStayOpen-collapseFour_1" aria-expanded="true"
                                 aria-controls="panelsStayOpen-collapseFour_1">
@@ -116,9 +110,27 @@
                                     Big Nose
                                 </label>
                             </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="No_Beard_1">
+                                <label class="form-check-label" for="No_Beard_1">
+                                    No Beard
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="High_Cheekbones_1">
+                                <label class="form-check-label" for="High_Cheekbones_1">
+                                    High Cheekbones
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="" id="Fully_Visible_Forehead_1">
+                                <label class="form-check-label" for="Fully_Visible_Forehead_1">
+                                    Fully Visible Forehead
+                                </label>
+                            </div>
 
                             <!-- Race -->
-                            <select id="race_1" class="form-select" aria-label="Default select example">
+                            <select id="race_1" class="form-select mb-2" aria-label="Default select example">
                                 <option value="0" selected>Race</option>
                                 <option value="1">Asian</option>
                                 <option value="2">White</option>
@@ -126,38 +138,25 @@
                             </select>
 
                             <!-- Hair features -->
-                            <select id="hair_style_1" class="form-select" aria-label="Default select example">
+                            <select id="hair_style_1" class="form-select mb-2" aria-label="Default select example">
                                 <option value="0" selected>Hair Style</option>
-                                <option value="1">bald</option>
-                                <option value="2">Wavy_Hair</option>
-                                <option value="3">Black_Hair</option>
+                                <option value="1">Bald</option>
+                                <option value="2">Wavy Hair</option>
+                                <option value="3">Black Hair</option>
                             </select>
-                            <input class="form-check-input" type="checkbox" value="" id="No_Beard_1">
-                            <label class="form-check-label" for="No_Beard_1">
-                                No_Beard
-                            </label>
 
                             <!-- Geometrical features -->
-                            <select id="face_shape_1" class="form-select" aria-label="Default select example">
+                            <select id="face_shape_1" class="form-select mb-2" aria-label="Default select example">
                                 <option value="0" selected>Face shape</option>
                                 <option value="1">Oval</option>
                                 <option value="2">Square</option>
                                 <option value="3">Round</option>
                             </select>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="High_Cheekbones_1">
-                                <label class="form-check-label" for="High_Cheekbones_1">
-                                    High Cheekbones
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Fully_Visible_Forehead_1">
-                                <label class="form-check-label" for="Fully_Visible_Forehead_1">
-                                    Fully Visible Forehead
-                                </label>
-                            </div>
                         </div>
                     </div>
+                </div>
+                <div class="align-items-center">
+                    <button id="gen_bt_1" onclick="window.index.pic_gen_1()" class="btn btn-primary w-100" type="button">Generate</button>
                 </div>
             </div>
 
@@ -165,14 +164,12 @@
                 IMAGE 2
             -->
             <div id="gen_img_2" class="col-12 col-md-4 mb-3">
+                <h3 align="center" class="mb-3">Face B</h3>
                 <canvas id="generated_image_2" width="256" height="256" class="img-fluid" alt="Generated image"></canvas>
-                <div class="align-items-center">
-                    <button id="gen_bt_2" onclick="window.index.pic_gen_2()" class="btn btn-primary w-100" type="button">Generate</button>
-                </div>
                 
                 <div class="accordion" id="features_2">
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="Facial_Elements_2">
+                        <h2 class="accordion-header mb-2" id="Facial_Elements_2">
                             <button class="accordion-button" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#panelsStayOpen-collapseFour_2" aria-expanded="true"
                                 aria-controls="panelsStayOpen-collapseFour_2">
@@ -205,9 +202,27 @@
                                     Big Nose
                                 </label>
                             </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="No_Beard_2">
+                                <label class="form-check-label" for="No_Beard_2">
+                                    No Beard
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="High_Cheekbones_2">
+                                <label class="form-check-label" for="High_Cheekbones_2">
+                                    High Cheekbones
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="" id="Fully_Visible_Forehead_2">
+                                <label class="form-check-label" for="Fully_Visible_Forehead_2">
+                                    Fully Visible Forehead
+                                </label>
+                            </div>
 
                             <!-- Race -->
-                            <select id="race_2" class="form-select" aria-label="Default select example">
+                            <select id="race_2" class="form-select mb-2" aria-label="Default select example">
                                 <option value="0" selected>Race</option>
                                 <option value="1">Asian</option>
                                 <option value="2">White</option>
@@ -215,39 +230,28 @@
                             </select>
 
                             <!-- Hair features -->
-                            <select id="hair_style_2" class="form-select" aria-label="Default select example">
+                            <select id="hair_style_2" class="form-select mb-2" aria-label="Default select example">
                                 <option value="0" selected>Hair Style</option>
-                                <option value="1">bald</option>
-                                <option value="2">Wavy_Hair</option>
-                                <option value="3">Black_Hair</option>
+                                <option value="1">Bald</option>
+                                <option value="2">Wavy Hair</option>
+                                <option value="3">Black Hair</option>
 
                             </select>
-                            <input class="form-check-input" type="checkbox" value="" id="No_Beard_2">
-                            <label class="form-check-label" for="No_Beard_2">
-                                No_Beard
-                            </label>
 
                             <!-- Geometrical features -->
-                            <select id="face_shape_2" class="form-select" aria-label="Default select example">
+                            <select id="face_shape_2" class="form-select mb-2" aria-label="Default select example">
                                 <option value="0" selected>Face shape</option>
                                 <option value="1">Oval</option>
                                 <option value="2">Square</option>
                                 <option value="3">Round</option>
                             </select>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="High_Cheekbones_2">
-                                <label class="form-check-label" for="High_Cheekbones_2">
-                                    High Cheekbones
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="Fully_Visible_Forehead_2">
-                                <label class="form-check-label" for="Fully_Visible_Forehead_2">
-                                    Fully Visible Forehead
-                                </label>
-                            </div>
                         </div>
+                        
                     </div>
+                </div>
+                
+                <div class="align-items-center">
+                    <button id="gen_bt_2" onclick="window.index.pic_gen_2()" class="btn btn-primary w-100" type="button">Generate</button>
                 </div>
             </div>
 
@@ -255,17 +259,17 @@
                 INTERPOLATED IMAGE
             -->
             <div id="interpolated_img" class="col-12 col-md-4 mb-3">
+                <h3 align="center" class="mb-3">Mixed Face</h3>
                 <canvas id="interpolated_image" width="256" height="256" class="img-fluid" alt="Generated image"></canvas>
                 <div class="align-items-center">
-                    <label for="interpolate" class="form-label">Interpolate</label>
-                    <input type="range" class="form-range" min="0" max="10" step="1" id="interpolate" value="0">
+                    <label for="interpolate" class="form-label mb-2">Interpolate</label>
+                    <input type="range" class="form-range mb-2" min="0" max="10" step="1" id="interpolate" value="0">
                     <button id="gen_bt" onclick="window.index.pic_gen_interpolate()" class="btn btn-primary w-100" type="button">Generate</button>
                     <div class="col flex-fill">
                         <div class="h-100" style="background-color: #eee;"></div>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
